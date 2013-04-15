@@ -18,6 +18,9 @@ int set_option(struct packet_data *sp_pd, char *option, char* value) {
 	else if (!strcmp(option, "IF_NAME")) {
 		strcpy(sp_pd->if_name, value);
 	}
+	else if (!strcmp(option, "PK_DST_MAC")) {
+		strcpy(sp_pd->pk_dst_mac, value);
+	}
 	else if (!strcmp(option, "SRC_MAC")) {
 		strcpy(sp_pd->src_mac, value);
 	}
@@ -57,8 +60,16 @@ int parse_conf_file(struct packet_data *sp_pd) {
 	}
 
 	while (fscanf(fp, "%s", line) != EOF) {
-		
 		option = line;
+
+		/* Ignore comment lines */
+		if (line[0] == '#') {
+			char c;
+			while (fscanf(fp, "%c", &c) != EOF)
+				if (c == '\n')
+					break;
+			continue;
+		}
 		
 		c = strchr(line, '=');
 		if (!c) {

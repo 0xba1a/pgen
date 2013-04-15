@@ -1,15 +1,48 @@
 #include "pgen.h"
 
+char *ethr_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
+
+	struct ether_header *sp_ethr_hdr = NULL;
+	struct ether_addr *sp_ethr_addr = NULL;
+
+	sp_ethr_hdr = (struct ether_header *) cp_cur;
+
+	/* Set source MAC address */
+	sp_ethr_addr = ether_aton(sp_pd->src_mac);
+	if (!sp_ethr_addr) {
+		perror("ether_aton");
+		goto err;
+	}
+	memcpy(sp_ethr_hdr->ether_shost, sp_ethr_addr, ETH_ALEN);
+
+	/* Set destination MAC address */
+	sp_ethr_addr = ether_aton(sp_pd->dst_mac);
+	if (!sp_ethr_addr) {
+		perror("ether_aton");
+		goto err;
+	}
+	memcpy(sp_ethr_hdr->ether_dhost, sp_ethr_addr, ETH_ALEN);
+
+	/* Set packet type */
+	sp_ethr_hdr->ether_type = htons(sp_pd->ether_type);
+
+	return (cp_cur + sizeof(struct ether_header));
+
+err:
+	return NULL;
+
+}
+
+/* It starts exactly from here */
 int main(int argc, char **argv) {
-	printf("main start\n");
 	int sockfd;
 	struct sockaddr_ll s_sock_addr;
 	struct ifreq s_if_idx;
 	struct ifreq s_if_mac;
 	struct packet_data *sp_pd = NULL;
-	char *cp_buff = NULL;
-	struct ether_header *sp_ethr_hdr = NULL;
 	struct ether_addr *sp_ethr_addr = NULL;
+	char *cp_buff = NULL;
+	char *cp_cur = NULL;
 
 	/* Get the RAW socket */
 	sockfd = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW);
@@ -48,28 +81,13 @@ int main(int argc, char **argv) {
 	}
 
 	memset(cp_buff, 0, sizeof(sp_pd->buff_size));
+	cp_cur = cp_buff;
 
-	sp_ethr_hdr = (struct ether_header *) cp_buff;
-
-	/* Set source MAC address */
-	sp_ethr_addr = ether_aton(sp_pd->src_mac);
-	if (!sp_ethr_addr) {
-		perror("ether_aton");
+	if (!(cp_cur = ethr_hdr_writer(sp_pd, cp_cur))) {
+		fprintf(stderr, "error in writing ethernet header\n");
 		goto err;
 	}
-	memcpy(sp_ethr_hdr->ether_shost, sp_ethr_addr, ETH_ALEN);
-
-	/* Set destination MAC address */
-	sp_ethr_addr = ether_aton(sp_pd->dst_mac);
-	if (!sp_ethr_addr) {
-		perror("ether_aton");
-		goto err;
-	}
-	memcpy(sp_ethr_hdr->ether_dhost, sp_ethr_addr, ETH_ALEN);
-
-	/* Set packet type */
-	sp_ethr_hdr->ether_type = htons(sp_pd->ether_type);
-
+	
 	/* Get the index of the interface */
 	memset(&s_if_idx, 0, sizeof (struct ifreq));
 	strcpy(s_if_idx.ifr_name, sp_pd->if_name);
