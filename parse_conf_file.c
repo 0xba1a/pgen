@@ -5,6 +5,8 @@
 
 int set_option(struct packet_data *sp_pd, char *option, char* value) {
 
+	printf("option : %s\t value : %s\n", option, value);
+
 	if (!strcmp(option, "BUFF_SIZE")) {
 		errno = 0;
 		sp_pd->buff_size = strtol(value, NULL, 10);
@@ -58,16 +60,17 @@ int parse_conf_file(struct packet_data *sp_pd) {
 		
 		option = line;
 		
-		c = strchr(c, '=');
+		c = strchr(line, '=');
 		if (!c) {
 			perror("strchr");
 			goto err;
 		}
 		
 		value = c + 1;
-		c = strchr(c, '\n');
+		*c = '\0';
+		c = strchr(value, '\n');
 		if (c)
-			c = NULL;
+			*c = '\0';
 
 		if (set_option(sp_pd, option, value)) {
 			fprintf(stderr, "%s - Invalide option\n", option);

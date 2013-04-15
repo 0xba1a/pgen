@@ -1,6 +1,7 @@
 #include "pgen.h"
 
 int main(int argc, char **argv) {
+	printf("main start\n");
 	int sockfd;
 	struct sockaddr_ll s_sock_addr;
 	struct ifreq s_if_idx;
@@ -26,10 +27,9 @@ int main(int argc, char **argv) {
 	/* Choose the conf file */
 	if (argc < 2)
 		strcpy(sp_pd->conf_file, DEF_PGEN_CONF);
-	else
+	else if (argc == 2)
 		strcpy(sp_pd->conf_file, argv[1]);
-
-	if (argc > 2) {
+	else {
 		usage();
 		goto err;
 	}
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 
 	/* Get the MAC address of the interface */
 	memset(&s_if_mac, 0, sizeof(struct ifreq));
-	strcpy(s_if_idx.ifr_name, sp_pd->if_name);
+	strcpy(s_if_mac.ifr_name, sp_pd->if_name);
 	if (ioctl(sockfd, SIOCGIFHWADDR, &s_if_mac) < 0) {
 		perror("ioctl, hwaddr");
 		goto err;
@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
 	return 0;
 
 err:
+	fprintf(stderr, "ERROR CASE\n");
 	/* free will accept NULL */
 	free(sp_pd);
 	free(cp_buff);
