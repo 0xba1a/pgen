@@ -1,5 +1,5 @@
 #include <net/if_arp.h>
-#include <net/ether.h>
+#include <netinet/ether.h>
 
 #include "pgen.h"
 
@@ -58,28 +58,28 @@ int arp_write_ip(char *dst, char *src) {
 char* arp_hdr_writer(struct packet_data sp_pd, char *cp_cur) {
 	struct arp_packet *pkt = (struct arp_packet *)cp_cur;
 	
-	pkt->hw_type = htons(sp_pd->arp_hw_type);
-	pkt->proto_type = htons(sp_pd->arp_proto_type);
-	pkt->hw_len = (unsigned char) htons(sp_pd->arp_hw_len);
-	pkt->proto_len = (unsigned char) htons(sp_pd->arp_proto_len);
-	pkt->op = htons(sp_pd->arp_op);
+	pkt->hw_type = htons(sp_pd.arp_hw_type);
+	pkt->proto_type = htons(sp_pd.arp_proto_type);
+	pkt->hw_len = (unsigned char) htons(sp_pd.arp_hw_len);
+	pkt->proto_len = (unsigned char) htons(sp_pd.arp_proto_len);
+	pkt->op = htons(sp_pd.ar_op);
 
-	if (arp_write_mac(pkt->src_mac, sp_pd->arp_src_mac)) {
+	if (arp_write_mac(pkt->src_mac, sp_pd.arp_src_mac)) {
 		fprintf(stderr, "ARP: src_mac convertion error\n");
 		goto err;
 	}
 
-	if (arp_write_mac(pkt->dst_mac, sp_pd->arp_dst_mac)) {
+	if (arp_write_mac(pkt->dst_mac, sp_pd.arp_dst_mac)) {
 		fprintf(stderr, "ARP: dst_mac convertion error\n");
 		goto err;
 	}
 
-	if (arp_write_ip(pkt->src_ip, sp_pd->arp_src_ip)) {
+	if (arp_write_ip(pkt->src_ip, sp_pd.arp_src_ip)) {
 		fprintf(stderr, "ARP: src_ip convertion error\n");
 		goto err;
 	}
 
-	if (arp_write_ip(pkt->dst_ip, sp_pd->arp_dst_ip)) {
+	if (arp_write_ip(pkt->dst_ip, sp_pd.arp_dst_ip)) {
 		fprintf(stderr, "ARP: dst_ip convertion error\n");
 		goto err;
 	}

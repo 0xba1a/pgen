@@ -1,5 +1,5 @@
 #include "pgen.h"
 
 void usage() {
-	printf("Usage : pgen [conf_file]\n");
+	printf("Usage : pgen -f [conf_file]\n");
 }

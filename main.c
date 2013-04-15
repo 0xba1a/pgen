@@ -1,9 +1,10 @@
 #include "pgen.h"
 #include "ether.h"
 
+
 /* It starts exactly from here */
 int main(int argc, char **argv) {
-	int sockfd;
+	int sockfd, opt;
 	struct sockaddr_ll s_sock_addr;
 	struct ifreq s_if_idx;
 	struct ifreq s_if_mac;
@@ -12,27 +13,38 @@ int main(int argc, char **argv) {
 	char *cp_buff = NULL;
 	char *cp_cur = NULL;
 
+	/* born2be root ? */
+	if (getuid() != 0) {
+		fprintf(stderr, "not root\n");
+		goto err;
+	}
+
 	/* Get the RAW socket */
+	/* TODO: maybe create the raw socket after read cmd args and parsed conf? :-) */
 	sockfd = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW);
 	if (sockfd < 0) {
 		perror("socket");
 		goto err;
 	}
 
-	sp_pd = malloc(sizeof(struct packet_data));
+	sp_pd = (struct packet_data *) calloc(1, sizeof(struct packet_data));
 	if (!sp_pd) {
 		perror("malloc");
 		goto err;
 	}
 
-	/* Choose the conf file */
-	if (argc < 2)
-		strcpy(sp_pd->conf_file, DEF_PGEN_CONF);
-	else if (argc == 2)
-		strcpy(sp_pd->conf_file, argv[1]);
-	else {
-		usage();
-		goto err;
+	/* parse command line options */
+	strcpy(sp_pd->conf_file, DEF_PGEN_CONF);
+	while ( (opt = getopt(argc, argv, "f:")) != -1 ) {
+		switch (opt) {
+			case 'f':
+				strncpy(sp_pd->conf_file, optarg, PATH_MAX);
+				sp_pd->conf_file[PATH_MAX-1] = '\0';
+				break;
+			default:
+				usage();
+				goto err;
+		}
 	}
 
 	/* Parse the conf file */
@@ -42,7 +54,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* Allocating the packet itself ;) */
-	cp_buff = malloc(sp_pd->buff_size);
+	cp_buff = calloc(1, sp_pd->buff_size);
 	if (!cp_buff) {
 		perror("malloc");
 		goto err;
