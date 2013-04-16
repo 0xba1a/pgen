@@ -1,5 +1,6 @@
 #include "pgen.h"
 #include "ether.h"
+#include "arp.h"
 
 /* It starts exactly from here */
 int main(int argc, char **argv) {
@@ -51,8 +52,15 @@ int main(int argc, char **argv) {
 	memset(cp_buff, 0, sizeof(sp_pd->buff_size));
 	cp_cur = cp_buff;
 
+	/* Ethernet portion */
 	if (!(cp_cur = ethr_hdr_writer(sp_pd, cp_cur))) {
 		fprintf(stderr, "error in writing ethernet header\n");
+		goto err;
+	}
+
+	/* ARP protion */
+	if (!(cp_cur = arp_hdr_writer(sp_pd, cp_cur))) {
+		fprintf(stderr, "error in arp writing\n");
 		goto err;
 	}
 	
@@ -75,13 +83,11 @@ int main(int argc, char **argv) {
 	/* Set sending socket address */
 	s_sock_addr.sll_ifindex = s_if_idx.ifr_ifindex;
 	s_sock_addr.sll_halen = ETH_ALEN;
-	sp_ethr_addr = ether_aton(sp_pd->dst_mac);
-	if (!sp_ethr_addr) {
-		perror("ether_aton");
+	if (mac_writer(s_sock_addr.sll_addr, sp_pd->pk_dst_mac)) {
+		fprintf(stderr, "SOCK: dst mac writing error\n");
 		goto err;
 	}
-	memcpy(s_sock_addr.sll_addr, sp_ethr_addr, ETH_ALEN);
-
+	
 	if (sendto(sockfd, cp_buff, sp_pd->buff_size, 0,
 				(struct sockaddr *)&s_sock_addr, 
 				sizeof(struct sockaddr_ll)) < 0) {

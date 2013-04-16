@@ -1,32 +1,33 @@
 #include "pgen.h"
 
+struct ether_header {
+	char ether_dhost[6];
+	char ether_shost[6];
+	unsigned short ether_type;
+};
+
 char* ethr_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
 
 	struct ether_header *sp_ethr_hdr = NULL;
-	struct ether_addr *sp_ethr_addr = NULL;
 
 	sp_ethr_hdr = (struct ether_header *) cp_cur;
 
 	/* Set source MAC address */
-	sp_ethr_addr = ether_aton(sp_pd->src_mac);
-	if (!sp_ethr_addr) {
-		perror("ether_aton");
+	if (mac_writer(sp_ethr_hdr->ether_shost, sp_pd->src_mac)) {
+		fprintf(stderr, "ether: Source MAC copy error\n");
 		goto err;
 	}
-	memcpy(sp_ethr_hdr->ether_shost, sp_ethr_addr, ETH_ALEN);
 
 	/* Set destination MAC address */
-	sp_ethr_addr = ether_aton(sp_pd->dst_mac);
-	if (!sp_ethr_addr) {
-		perror("ether_aton");
+	if (mac_writer(sp_ethr_hdr->ether_dhost, sp_pd->dst_mac)) {
+		fprintf(stderr, "ether: Destination MAC copy error\n");
 		goto err;
 	}
-	memcpy(sp_ethr_hdr->ether_dhost, sp_ethr_addr, ETH_ALEN);
 
 	/* Set packet type */
 	sp_ethr_hdr->ether_type = htons(sp_pd->ether_type);
 
-	return ((char *)(cp_cur + sizeof(struct ether_header)));
+	return (cp_cur + sizeof(struct ether_header));
 
 err:
 	return NULL;

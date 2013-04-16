@@ -9,11 +9,11 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <net/if.h>
-#include <netinet/ether.h>
 #include <errno.h>
 #include <linux/limits.h>
 
 #define DEF_PGEN_CONF "/etc/pgen.conf"
+#define ETH_ALEN 6
 
 struct packet_data {
 	/* common data */
@@ -22,11 +22,11 @@ struct packet_data {
 
 	/* sending socket address info */
 	char if_name[IFNAMSIZ];
-	char pk_dst_mac[17];
+	char pk_dst_mac[18];
 
 	/* ethernet header data */
-	char src_mac[17];
-	char dst_mac[17];
+	char src_mac[18];
+	char dst_mac[18];
 	int ether_type;
 
 	/* ARP packet data */
@@ -34,14 +34,11 @@ struct packet_data {
 	int arp_proto_type;
 	int arp_hw_len;
 	int arp_proto_len;
-	int ar_op;
-	char arp_src_mac[17];
-	char arp_dst_mac[17];
-	char arp_src_ip[15];
-	char arp_dst_ip[15];
+	int arp_opcode;
+	char arp_src_mac[18];
+	char arp_dst_mac[18];
+	char arp_src_ip[16];
+	char arp_dst_ip[16];
 };
-
-void usage();
-int parse_conf_file(struct packet_data *);
 
 #endif /* PGEN_H */
