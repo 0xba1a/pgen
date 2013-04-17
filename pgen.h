@@ -43,9 +43,9 @@ struct packet_data {
 	char arp_dst_ip[16];
 };
 
-int set_option(struct packet_data *, const char *, const char *);
-char* ethr_hdr_writer(struct packet_data *, char *);
-char* arp_hdr_writer(struct packet_data *, char *);
+int pgen_set_option(struct packet_data *, const char *, const char *);
+char* pgen_ethr_hdr_writer(struct packet_data *, char *);
+char* pgen_arp_hdr_writer(struct packet_data *, char *);
 
 /* Helpers */
 void usage();

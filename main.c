@@ -12,6 +12,7 @@ int main(int argc, char **argv) {
 		perror("malloc");
 		goto err;
 	}
+	memset(sp_pd, 0, sizeof(struct packet_data));
 
 	/* Choose the conf file */
 	if (argc < 2)
@@ -39,15 +40,19 @@ int main(int argc, char **argv) {
 	cp_cur = cp_buff;
 
 	/* Ethernet portion */
-	if (!(cp_cur = ethr_hdr_writer(sp_pd, cp_cur))) {
-		fprintf(stderr, "error in writing ethernet header\n");
-		goto err;
+	if (sp_pd->ether_hdr) {
+		if (!(cp_cur = pgen_ethr_hdr_writer(sp_pd, cp_cur))) {
+			fprintf(stderr, "error in writing ethernet header\n");
+			goto err;
+		}
 	}
 
 	/* ARP protion */
-	if (!(cp_cur = arp_hdr_writer(sp_pd, cp_cur))) {
-		fprintf(stderr, "error in arp writing\n");
-		goto err;
+	if (sp_pd->arp) {
+		if (!(cp_cur = pgen_arp_hdr_writer(sp_pd, cp_cur))) {
+			fprintf(stderr, "error in arp writing\n");
+			goto err;
+		}
 	}
 	
 	/* Get the index of the interface */

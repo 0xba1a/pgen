@@ -6,7 +6,7 @@ struct ether_header {
 	unsigned short ether_type;
 };
 
-char* ethr_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
+char* pgen_ethr_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
 
 	struct ether_header *sp_ethr_hdr = NULL;
 

@@ -14,7 +14,7 @@ struct arp_packet {
 	unsigned char dst_ip[4];
 };
 
-char* arp_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
+char* pgen_arp_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
 	struct arp_packet *pkt = (struct arp_packet *)cp_cur;
 
 	pkt->hw_type =  htons(sp_pd->arp_hw_type);
