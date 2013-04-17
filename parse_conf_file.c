@@ -3,12 +3,13 @@
 /* These values need be finalized later */
 #define MAX_LINE_LENGTH 200
 
-int set_option(struct packet_data *sp_pd, char *option, char* value) {
+int set_option(struct packet_data *sp_pd, const char *option,
+	   const char* value) {
 
-	printf("option : %s\t value : %s\n", option, value);
+	///printf("%s\t : %s\n", option, value);
 
 	/* Common information */
-	if (!strcmp(option, "BUFF_SIZE")) {
+	if (!pgen_strcmp(option, "BUFF_SIZE")) {
 		errno = 0;
 		sp_pd->buff_size = strtol(value, NULL, 10);
 		if (errno) {
@@ -17,19 +18,28 @@ int set_option(struct packet_data *sp_pd, char *option, char* value) {
 		}
 	}
 	/* Sending socket related info */
-	else if (!strcmp(option, "IF_NAME")) {
+	else if (!pgen_strcmp(option, "IF_NAME")) {
 		strcpy(sp_pd->if_name, value);
 	}
-	else if (!strcmp(option, "PK_DST_MAC")) {
+	else if (!pgen_strcmp(option, "PK_DST_MAC")) {
 		strcpy(sp_pd->pk_dst_mac, value);
 	}
-	else if (!strcmp(option, "SRC_MAC")) {
+	/* Ethernet related info */
+	else if (!pgen_strcmp(option, "ETHER_HEADER")) {
+		errno = 0;
+		sp_pd->ether_hdr = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid ETHER_HEADER type\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "SRC_MAC")) {
 		strcpy(sp_pd->src_mac, value);
 	}
-	else if (!strcmp(option, "DST_MAC")) {
+	else if (!pgen_strcmp(option, "DST_MAC")) {
 		strcpy(sp_pd->dst_mac, value);
 	}
-	else if (!strcmp(option, "ETHR_TYPE")) {
+	else if (!pgen_strcmp(option, "ETHR_TYPE")) {
 		errno = 0;
 		sp_pd->ether_type = strtol(value, NULL, 10);
 		if (errno) {
@@ -37,7 +47,16 @@ int set_option(struct packet_data *sp_pd, char *option, char* value) {
 			goto err;
 		}
 	}
-	else if (!strcmp(option, "ARP_HW_TYPE")) {
+	/* ARP protocol related information */
+	else if (!pgen_strcmp(option, "ARP")) {
+		errno = 0;
+		sp_pd->arp = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid ARP value\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "ARP_HW_TYPE")) {
 		errno = 0;
 		sp_pd->arp_hw_type = strtol(value, NULL, 10);
 		if (errno) {
@@ -45,7 +64,7 @@ int set_option(struct packet_data *sp_pd, char *option, char* value) {
 			goto err;
 		}
 	}
-	else if (!strcmp(option, "ARP_PROTO_TYPE")) {
+	else if (!pgen_strcmp(option, "ARP_PROTO_TYPE")) {
 		errno = 0;
 		sp_pd->arp_proto_type = strtol(value, NULL, 10);
 		if (errno) {
@@ -53,7 +72,7 @@ int set_option(struct packet_data *sp_pd, char *option, char* value) {
 			goto err;
 		}
 	}
-	else if (!strcmp(option, "ARP_HW_LEN")) {
+	else if (!pgen_strcmp(option, "ARP_HW_LEN")) {
 		errno = 0;
 		sp_pd->arp_hw_len = strtol(value, NULL, 10);
 		if (errno) {
@@ -61,7 +80,7 @@ int set_option(struct packet_data *sp_pd, char *option, char* value) {
 			goto err;
 		}
 	}
-	else if (!strcmp(option, "ARP_PROTO_LEN")) {
+	else if (!pgen_strcmp(option, "ARP_PROTO_LEN")) {
 		errno = 0;
 		sp_pd->arp_proto_len = strtol(value, NULL, 10);
 		if (errno) {
@@ -69,7 +88,7 @@ int set_option(struct packet_data *sp_pd, char *option, char* value) {
 			goto err;
 		}
 	}
-	else if (!strcmp(option, "ARP_OPCODE")) {
+	else if (!pgen_strcmp(option, "ARP_OPCODE")) {
 		errno = 0;
 		sp_pd->arp_opcode = strtol(value, NULL, 10);
 		if (errno) {
@@ -77,25 +96,23 @@ int set_option(struct packet_data *sp_pd, char *option, char* value) {
 			goto err;
 		}
 	}
-	else if (!strcmp(option, "ARP_SRC_MAC")) {
+	else if (!pgen_strcmp(option, "ARP_SRC_MAC")) {
 		strcpy(sp_pd->arp_src_mac, value);
 	}
-	else if (!strcmp(option, "ARP_SRC_IP")) {
+	else if (!pgen_strcmp(option, "ARP_SRC_IP")) {
 		strcpy(sp_pd->arp_src_ip, value);
 	}
-	else if (!strcmp(option, "ARP_DST_IP")) {
+	else if (!pgen_strcmp(option, "ARP_DST_IP")) {
 		strcpy(sp_pd->arp_dst_ip, value);
 	}
-	else if (!strcmp(option, "ARP_DST_MAC")) {
+	else if (!pgen_strcmp(option, "ARP_DST_MAC")) {
 		strcpy(sp_pd->arp_dst_mac, value);
 	}
 	else {
 		fprintf(stderr, "Invalid Option\n");
 		goto err;
 	}
-
 	return 0;
-
 err:
 	return -1;
 }
