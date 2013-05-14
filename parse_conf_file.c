@@ -17,6 +17,7 @@ int set_option(struct packet_data *sp_pd, const char *option,
 			goto err;
 		}
 	}
+
 	/* Sending socket related info */
 	else if (!pgen_strcmp(option, "IF_NAME")) {
 		strcpy(sp_pd->if_name, value);
@@ -24,6 +25,7 @@ int set_option(struct packet_data *sp_pd, const char *option,
 	else if (!pgen_strcmp(option, "PK_DST_MAC")) {
 		strcpy(sp_pd->pk_dst_mac, value);
 	}
+
 	/* Ethernet related info */
 	else if (!pgen_strcmp(option, "ETHER_HEADER")) {
 		errno = 0;
@@ -47,6 +49,7 @@ int set_option(struct packet_data *sp_pd, const char *option,
 			goto err;
 		}
 	}
+
 	/* ARP protocol related information */
 	else if (!pgen_strcmp(option, "ARP")) {
 		errno = 0;
@@ -108,10 +111,76 @@ int set_option(struct packet_data *sp_pd, const char *option,
 	else if (!pgen_strcmp(option, "ARP_DST_MAC")) {
 		strcpy(sp_pd->arp_dst_mac, value);
 	}
+
+	/* IPv6 header related information */
+	else if (!pgen_strcmp(option, "IPV6")) {
+		errno = 0;
+		sp_pd->ipv6 = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid IPv6 code\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "IPV6_VERSION")) {
+		errno = 0;
+		sp_pd->ipv6_version = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid IPV6_VERSION\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "IPV6_TRAFFIC_CLASS")) {
+		errno = 0;
+		sp_pd->ipv6_traffic_class = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid IPV6_TRAFFIC_CLASS\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "IPV6_FLOW_LABEL")) {
+		errno = 0;
+		sp_pd->ipv6_flow_label = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid IPV6_FLOW_LABEL\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "IPV6_PAYLOAD_LENGTH")) {
+		errno = 0;
+		sp_pd->ipv6_payload_length = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid IPV6_PAYLOAD_LENGTH\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "IPV6_NEXT_HEADER")) {
+		errno = 0;
+		sp_pd->ipv6_next_header = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid IPV6_NEXT_HEADER\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "IPV6_HOP_LIMIT")) {
+		errno = 0;
+		sp_pd->ipv6_hop_limit = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid IPV6_HOP_LIMIT\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "IPV6_SRC_ADDR")) {
+		strcpy(sp_pd->ipv6_src, value);
+	}
+	else if (!pgen_strcmp(option, "IPV6_DST_ADDR")) {
+		strcpy(sp_pd->ipv6_dst, value);
+	}
+
 	else {
 		fprintf(stderr, "Invalid Option\n");
 		goto err;
 	}
+
 	return 0;
 err:
 	return -1;

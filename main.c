@@ -54,6 +54,14 @@ int main(int argc, char **argv) {
 			goto err;
 		}
 	}
+
+	/* IPv6 part */
+	if (sp_pd->ipv6) {
+		if (!(cp_cur = pgen_ipv6_hdr_writer(sp_pd, cp_cur))) {
+			fprintf(stderr, "error in IPv6 writing\n");
+			goto err;
+		}
+	}
 	
 	/* Get the index of the interface */
 	/* Send the packet in wire */

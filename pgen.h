@@ -41,11 +41,23 @@ struct packet_data {
 	char arp_dst_mac[18];
 	char arp_src_ip[16];
 	char arp_dst_ip[16];
+
+	/*IPv6 Packet data */
+	int ipv6;
+	int ipv6_version;
+	int ipv6_traffic_class;
+	int ipv6_flow_label;
+	int ipv6_payload_length;
+	int ipv6_next_header;
+	int ipv6_hop_limit;
+	char ipv6_src[39];
+	char ipv6_dst[39];
 };
 
 int pgen_set_option(struct packet_data *, const char *, const char *);
 char* pgen_ethr_hdr_writer(struct packet_data *, char *);
 char* pgen_arp_hdr_writer(struct packet_data *, char *);
+char* pgen_ipv6_hdr_writer(struct packet_data *, char *);
 
 /* Helpers */
 void usage();
