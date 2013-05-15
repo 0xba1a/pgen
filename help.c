@@ -105,3 +105,109 @@ int ip4_writer(char *dst, const char *src) {
     return 0;
 }
 
+int ip6_writer(char *dst, const char *src) {
+	char temp[IPV6_ADDR_MAX_LEN] = {0}, c;
+	unsigned int seg = 0;
+	int i;
+
+	if (!src || !dst)
+		goto err;
+
+	if (ip6_expander(temp, src))
+		goto err;
+
+	for (i = 0; i < strlen(temp); i++) {
+		c = temp[i];
+
+		if ((c >= '0') && (c <= '9'))
+			seg = (seg*16) + (c-'0');
+		else if ((c >= 'a') && (c <= 'f'))
+			seg = (seg*16) + (c-'a') + 10;
+		else if ((c >= 'A') && (c <= 'F'))
+			seg = (seg*16) + (c-'A') + 10;
+		else if (c == ':') {
+			*dst++ = seg >> 8;
+			*dst++ = seg & 255;
+			seg = 0;
+			continue;
+		}
+		else
+			goto err;
+	}
+	*dst++ = seg >> 8;
+	*dst++ = seg & 255;
+	return 0;
+
+err:
+	return -1;
+}
+
+int ip6_expander(char *dst, const char *src) {
+	int len, rem, dots;
+	int i, j = 0, k = 0, nxt_col;
+	char intr[IPV6_ADDR_MAX_LEN], temp[5];
+
+	if (!dst || !src)
+		goto err;
+
+	if (!strcmp(src, "::")) {
+		strcpy(dst, "0000:0000:0000:0000:0000:0000:0000:0000");
+		return 0;
+	}
+
+	len = strlen(src);
+
+	for (i = 0; i < len; i++) {
+		temp[j] = src[i];
+		if (temp[j] == ':') {
+			temp[j] = '\0';
+			j = 0;
+
+			rem = strlen(temp);
+
+			if (!rem) {
+				intr[k++] = ':';
+				continue;
+			}
+
+			for (j = 0; j < (4-rem); j++)
+				intr[k++] = '0';
+			strcpy((intr+k), temp);
+			k += rem;
+			intr[k++] = ':';
+
+			j = 0;
+			continue;
+		}
+		j++;
+	}
+	temp[j] = '\0';
+	rem = strlen(temp);
+	if (!rem)
+		goto err;
+	for (j = 0; j < (4-rem); j++)
+		intr[k++] = '0';
+	strcpy((intr+k), temp);
+
+	len = strlen(intr);
+	for (i = 0, j = 0; i < len; i++) {
+		dst[j] = intr[i];
+		if (dst[j] == ':' && intr[i+1] == ':') {
+			dots = IPV6_ADDR_MAX_LEN - len;
+			for (k = 0; k < dots; k+=5 ) {
+				if ((i != 0) || (k != 0))
+					dst[j++] = ':';
+				dst[j++] = '0';
+				dst[j++] = '0';
+				dst[j++] = '0';
+				dst[j++] = '0';
+			}
+		}
+		else
+			j++;
+	}
+	return 0;
+
+err:
+	return -1;
+}
