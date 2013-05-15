@@ -21,7 +21,24 @@ char* pgen_ipv6_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
 	pkt->ver_tc_fw |= sp_pd->ipv6_version << 28;
 	pkt->ver_tc_fw |= sp_pd->ipv6_traffic_class << 20;
 	pkt->ver_tc_fw |= sp_pd->ipv6_flow_label;
-	printf("%d\n", pkt->ver_tc_fw);
 
+	pkt->ver_tc_fw = htonl(pkt->ver_tc_fw);
+	pkt->payload_length = htons(sp_pd->ipv6_payload_length);
+	pkt->next_header = (uint8_t)sp_pd->ipv6_next_header;
+	pkt->hop_limit = (uint8_t)sp_pd->ipv6_hop_limit;
+
+	if (ip6_writer(pkt->src, sp_pd->ipv6_src)) {
+		fprintf(stderr, "IPV6: src_ip conversion failed\n");
+		goto err;
+	}
+
+	if (ip6_writer(pkt->dst, sp_pd->ipv6_dst)) {
+		fprintf(stderr, "IPV6: dst_ip conversion failed\n");
+		goto err;
+	}
+
+	return (cp_cur + sizeof(struct ipv6_packet));
+
+err:
 	return NULL;
 }

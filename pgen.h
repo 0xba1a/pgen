@@ -14,6 +14,7 @@
 
 #define DEF_PGEN_CONF "/etc/pgen.conf"
 #define ETH_ALEN 6
+#define IPV6_ADDR_MAX_LEN 40
 
 struct packet_data {
 	/* common data */
