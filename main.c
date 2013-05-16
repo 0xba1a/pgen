@@ -62,6 +62,14 @@ int main(int argc, char **argv) {
 			goto err;
 		}
 	}
+
+	/* ICMP6 part */
+	if (sp_pd->icmp6) {
+		if (!(cp_cur = pgen_icmp6_writer(sp_pd, cp_cur))) {
+			fprintf(stderr, "error in ICMPv6 writing\n");
+			goto err;
+		}
+	}
 	
 	/* Get the index of the interface */
 	/* Send the packet in wire */

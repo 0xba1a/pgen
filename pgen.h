@@ -43,7 +43,7 @@ struct packet_data {
 	char arp_src_ip[16];
 	char arp_dst_ip[16];
 
-	/*IPv6 Packet data */
+	/* IPv6 Packet data */
 	int ipv6;
 	int ipv6_version;
 	int ipv6_traffic_class;
@@ -53,12 +53,22 @@ struct packet_data {
 	int ipv6_hop_limit;
 	char ipv6_src[39];
 	char ipv6_dst[39];
+
+	/* ICMPv6 header data */
+	int icmp6;
+	int icmp6_type;
+	int icmp6_code;
+	int icmp6_checksum;
+	/* icmp6_type and the message could be different */
+	int icmp6_msg_type;
+
 };
 
 int pgen_set_option(struct packet_data *, const char *, const char *);
 char* pgen_ethr_hdr_writer(struct packet_data *, char *);
 char* pgen_arp_hdr_writer(struct packet_data *, char *);
 char* pgen_ipv6_hdr_writer(struct packet_data *, char *);
+char* pgen_icmp6_writer(struct packet_data *, char *);
 
 /* Helpers */
 void usage();
