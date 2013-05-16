@@ -3,7 +3,7 @@ BUFF_SIZE=1024
 
 #Packet Sending Information
 PK_DST_MAC=00:01:9B:04:03:3C
-IF_NAME=eth0
+IF_NAME=lo
 
 #Ethernet header
 ETHER_HEADER=1
