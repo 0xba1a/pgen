@@ -176,6 +176,43 @@ int set_option(struct packet_data *sp_pd, const char *option,
 		strcpy(sp_pd->ipv6_dst, value);
 	}
 
+	/* ICMPv6 header information */
+	else if (!pgen_strcmp(option, "ICMP6")) {
+		errno = 0;
+		sp_pd->icmp6 = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid ICMP6\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "ICMP6_TYPE")) {
+		errno = 0;
+		sp_pd->icmp6_type = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid ICMP6_TYPE\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "ICMP6_CODE")) {
+		errno = 0;
+		sp_pd->icmp6_code = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid ICMP6_CODE\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "ICMP6_CHECKSUM")) {
+		errno = 0;
+		sp_pd->icmp6_checksum = strtol(value, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "Invalid ICMP6_CHECKSUM\n");
+			goto err;
+		}
+	}
+	else if (!pgen_strcmp(option, "ICMP6_BODY_TYPE")) {
+	}
+
+	/* OR ELSE ERROR */
 	else {
 		fprintf(stderr, "Invalid Option\n");
 		goto err;
