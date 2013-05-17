@@ -83,6 +83,16 @@ int mac_writer(char *dst, const char *src) {
 }
 
 int ip4_writer(char *dst, const char *src) {
+
+	struct in_addr *sin_addr = (struct in_addr *)dst;
+	if (inet_pton(AF_INET, src, sin_addr) == 0) {
+		fprintf(stderr, "invalid IP address\n");
+		return -1;
+	}
+	return 0;
+
+	/* Could be helpful later */
+#if 0
     int seg = 0;
     char ind;
     int i, j = 0;
@@ -103,9 +113,19 @@ int ip4_writer(char *dst, const char *src) {
 	dst[j] = (unsigned char) seg;
 
     return 0;
+#endif
 }
 
 int ip6_writer(char *dst, const char *src) {
+	struct in6_addr *sin6_addr = (struct in6_addr *)dst;
+	if (inet_pton(AF_INET6, src, sin6_addr) == 0) {
+		fprintf(stderr, "Invalid IPv6 address\n");
+		return -1;
+	}
+	return 0;
+
+	/* Could be helpful in future */
+#if 0
 	char temp[IPV6_ADDR_MAX_LEN] = {0}, c;
 	unsigned int seg = 0;
 	int i;
@@ -140,6 +160,7 @@ int ip6_writer(char *dst, const char *src) {
 
 err:
 	return -1;
+#endif
 }
 
 int ip6_expander(char *dst, const char *src) {
