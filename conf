@@ -3,13 +3,16 @@ BUFF_SIZE=1024
 
 #Packet Sending Information
 PK_DST_MAC=00:01:9B:04:03:3C
-IF_NAME=lo
+IF_NAME=eth0
 
 #Ethernet header
 ETHER_HEADER=1
 DST_MAC=ff:ff:ff:ff:ff:ff
 SRC_MAC=5C:D9:98:C1:8E:FE
+#IPv6
 ETHR_TYPE=34525
+#ARP
+#ETHR_TYPE=2054
 
 #ARP header
 ARP=0
@@ -35,7 +38,7 @@ IPV6_SRC_ADDR=fe80::5ed9:98ff:fec1:8efe
 IPV6_DST_ADDR=ff02::1:ff04:33c
 
 #ICMPv6 header
-ICMP6=1
+ICMP6=0
 ICMP6_TYPE=135
 ICMP6_CODE=0
 #give -1 for pgen to calculate checksum
