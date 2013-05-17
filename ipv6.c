@@ -14,6 +14,32 @@ struct ipv6_packet {
 	uint8_t dst[16];
 };
 
+struct ipv6_hop_by_hop {
+	uint8_t nxt_hdr;
+	uint8_t ext_len;
+	void *data;
+};
+
+char* pgen_ipv6_ext_writer(struct packet_data *sp_pd, char *cp_cur) {
+	int i;
+	struct ipv6_extention *ipv6_ext = sp_pd->ipv6_ext;
+
+	for (i = 0; i < sp_pd->ipv6_ext_hdr; i++) {
+		
+		/* Hop-By-Hop extention header */
+		if (ipv6_ext->hdr_type == 0) {
+			struct ipv6_hop_by_hop *hbh = (struct ipv6_hop_by_hop *)cp_cur;
+			hbh->nxt_hdr = 1; /// add conf option for this option
+			hbh->ext_len = 4; /// consider the approach. something is wrong
+			memcpy(hbh->data, ipv6_ext->data, 4);
+			ipv6_ext = ipv6_ext->next;
+			cp_cur = cp_cur + hbh->ext_len + 1;
+		}
+	}
+
+	return cp_cur;
+}
+
 char* pgen_ipv6_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
 	struct ipv6_packet *pkt = (struct ipv6_packet *)cp_cur;
 
@@ -37,7 +63,9 @@ char* pgen_ipv6_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
 		goto err;
 	}
 
-	return (cp_cur + sizeof(struct ipv6_packet));
+	cp_cur = pgen_ipv6_ext_writer(sp_pd, cp_cur + sizeof(struct ipv6_packet));
+
+	return cp_cur;
 
 err:
 	return NULL;

@@ -16,6 +16,12 @@
 #define ETH_ALEN 6
 #define IPV6_ADDR_MAX_LEN 40
 
+struct ipv6_extention {
+	int hdr_type;
+	void *data;
+	struct ipv6_extention *next;
+};
+
 struct packet_data {
 	/* common data */
 	char conf_file[PATH_MAX];
@@ -53,6 +59,10 @@ struct packet_data {
 	int ipv6_hop_limit;
 	char ipv6_src[39];
 	char ipv6_dst[39];
+
+	/* IPv6 extention header data */
+	int ipv6_ext_hdr;
+	struct ipv6_extention *ipv6_ext;
 
 	/* ICMPv6 header data */
 	int icmp6;
