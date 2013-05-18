@@ -1,7 +1,6 @@
 #include "pgen.h"
 
 /* These values need be finalized later */
-#define MAX_LINE_LENGTH 200
 
 int validate_if(const char *if_name) {
 	struct ifreq req;

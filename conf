@@ -2,8 +2,8 @@
 BUFF_SIZE=1024
 
 #Packet Sending Information
+IF_NAME=lo
 PK_DST_MAC=00:01:9B:04:03:3C
-IF_NAME=eth0
 
 #Ethernet header
 ETHER_HEADER=1
@@ -14,6 +14,7 @@ ETHR_TYPE=34525
 #ARP
 #ETHR_TYPE=2054
 
+/*
 #ARP header
 ARP=0
 ARP_HW_TYPE=1
@@ -45,3 +46,4 @@ ICMP6_CODE=0
 ICMP6_CHECKSUM=53224
 #Usually same as ICMP6_TYPE
 ICMP6_BODY_TYPE=135
+*/

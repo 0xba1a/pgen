@@ -8,7 +8,8 @@ int pgen_strcmp(const char *s1, const char *s2) {
 	return strncmp(s1, s2, strlen(s2) + 1);
 }
 
-int send_packet(struct packet_data *sp_pd, const char *cp_buff) {
+int send_packet(const char *if_name, const char *dst_mac, const char *cp_buff,
+		const int buff_size) {
 	int sockfd;
 	struct sockaddr_ll s_sock_addr;
 	struct ifreq s_if_idx;
@@ -23,7 +24,7 @@ int send_packet(struct packet_data *sp_pd, const char *cp_buff) {
 
 	/* Get the index of the interface */
     memset(&s_if_idx, 0, sizeof (struct ifreq));
-    strcpy(s_if_idx.ifr_name, sp_pd->if_name);
+    strcpy(s_if_idx.ifr_name, if_name);
     if (ioctl(sockfd, SIOCGIFINDEX, &s_if_idx) < 0) {
         perror("ioctl, index");
         goto err;
@@ -31,7 +32,7 @@ int send_packet(struct packet_data *sp_pd, const char *cp_buff) {
 
     /* Get the MAC address of the interface */
     memset(&s_if_mac, 0, sizeof(struct ifreq));
-    strcpy(s_if_mac.ifr_name, sp_pd->if_name);
+    strcpy(s_if_mac.ifr_name, if_name);
     if (ioctl(sockfd, SIOCGIFHWADDR, &s_if_mac) < 0) {
         perror("ioctl, hwaddr");
         goto err;
@@ -40,12 +41,12 @@ int send_packet(struct packet_data *sp_pd, const char *cp_buff) {
     /* Set sending socket address */
     s_sock_addr.sll_ifindex = s_if_idx.ifr_ifindex;
     s_sock_addr.sll_halen = ETH_ALEN;
-    if (mac_writer(s_sock_addr.sll_addr, sp_pd->pk_dst_mac)) {
+    if (mac_writer(s_sock_addr.sll_addr, dst_mac)) {
         fprintf(stderr, "SOCK: dst mac writing error\n");
         goto err;
     }
 
-	if (sendto(sockfd, cp_buff, sp_pd->buff_size, 0,
+	if (sendto(sockfd, cp_buff, buff_size, 0,
                 (struct sockaddr *)&s_sock_addr,
                 sizeof(struct sockaddr_ll)) < 0) {
         perror("sendto");
@@ -73,10 +74,8 @@ int mac_writer(char *dst, const char *src) {
             dst[j++] = (unsigned char) seg;
             seg = 0;
         }
-        else {
-			///printf("erro: %c\n", ind);
+        else
             return -1;
-		}
     }
 	dst[j] = (unsigned char) seg;
     return 0;
@@ -230,5 +229,77 @@ int ip6_expander(char *dst, const char *src) {
 	return 0;
 
 err:
+	return -1;
+}
+
+int pgen_parse_option(FILE *fp, char *option, char *value) {
+	char line[MAX_LINE_LENGTH];
+	char *c = NULL, *op, *val;
+	char ch;
+
+next:
+	while (fscanf(fp, "%s", line) != EOF) {
+        op = line;
+
+		/* Ignore multiple line comments */
+		if (line[0] == '/' && line[1] == '*') {
+			while (fscanf(fp, "%c", &ch) != EOF)
+				if (ch == '*')
+					if(fscanf(fp, "%c", &ch) != EOF) {
+						if (ch == '/')
+							goto next;
+					}
+					else
+						goto err;
+			goto err;
+
+		}
+
+        /* Ignore single line comments */
+        if (line[0] == '#') {
+            while (fscanf(fp, "%c", &ch) != EOF)
+                if (ch == '\n')
+                    break;
+            continue;
+        }
+
+        c = strchr(line, '=');
+        if (!c) {
+            perror("Syntax error in conf file\n");
+            goto err;
+        }
+
+        val = c + 1;
+        *c = '\0';
+        c = strchr(value, '\n');
+        if (c)
+            *c = '\0';
+
+		strcpy(option, op);
+		strcpy(value, val);
+
+       return 0; 
+    }
+	return EOF;
+
+err:
+	printf("parse: %s\n", line);
+	return 1;
+
+}
+
+int pgen_store_dec(int *i, const char *c) {
+	errno = 0;
+	*i = strtol(c, NULL, 10);
+	if (errno)
+		return -1;
+
+	return 0;
+}
+
+int pgen_strcpy(char *dst, const char *src) {
+	if (strncpy(dst, src, strlen(src)+1))
+		return 0;
+	perror("strncpy");
 	return -1;
 }
