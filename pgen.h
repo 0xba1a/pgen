@@ -15,6 +15,10 @@
 #define DEF_PGEN_CONF "/etc/pgen.conf"
 #define ETH_ALEN 6
 #define IPV6_ADDR_MAX_LEN 40
+#define CHAR_MAC_LEN 18
+#define MAX_OPTION_LEN 200
+#define MAX_VALUE_LEN 200
+#define MAX_LINE_LENGTH 1024
 
 struct packet_data {
 	/* common data */
@@ -65,7 +69,7 @@ struct packet_data {
 };
 
 int pgen_set_option(struct packet_data *, const char *, const char *);
-char* pgen_ethr_hdr_writer(struct packet_data *, char *);
+char* pgen_ethr_hdr_writer(FILE *, char *);
 char* pgen_arp_hdr_writer(struct packet_data *, char *);
 char* pgen_ipv6_hdr_writer(struct packet_data *, char *);
 char* pgen_icmp6_writer(struct packet_data *, char *);
@@ -73,7 +77,9 @@ char* pgen_icmp6_writer(struct packet_data *, char *);
 /* Helpers */
 void usage();
 int pgen_strcmp(const char *, const char *);
-int send_packet(struct packet_data *, const char *);
+int pgen_parse_option(FILE *, char *, char *);
+int send_packet(const char *, const char *, const char *, const int);
 int mac_writer(char *, const char *);
 int ip4_writer(char *, const char *);
+int pgen_store_dec(int *, const char *);
 #endif /* PGEN_H */
