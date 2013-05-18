@@ -70,7 +70,7 @@ struct packet_data {
 
 int pgen_set_option(struct packet_data *, const char *, const char *);
 char* pgen_ethr_hdr_writer(FILE *, char *);
-char* pgen_arp_hdr_writer(struct packet_data *, char *);
+char* pgen_arp_writer(FILE *, char *);
 char* pgen_ipv6_hdr_writer(struct packet_data *, char *);
 char* pgen_icmp6_writer(struct packet_data *, char *);
 

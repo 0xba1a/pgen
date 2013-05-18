@@ -36,31 +36,6 @@ char* pgen_ethr_hdr_writer(FILE *fp, char *cp_cur) {
 	}
 	return (cp_cur + sizeof(struct ether_header));
 
-#if 0
-
-	struct ether_header *sp_ethr_hdr = NULL;
-
-	sp_ethr_hdr = (struct ether_header *) cp_cur;
-
-	/* Set source MAC address */
-	if (mac_writer(sp_ethr_hdr->ether_shost, sp_pd->src_mac)) {
-		fprintf(stderr, "ether: Source MAC copy error\n");
-		goto err;
-	}
-
-	/* Set destination MAC address */
-	if (mac_writer(sp_ethr_hdr->ether_dhost, sp_pd->dst_mac)) {
-		fprintf(stderr, "ether: Destination MAC copy error\n");
-		goto err;
-	}
-
-	/* Set packet type */
-	sp_ethr_hdr->ether_type = htons(sp_pd->ether_type);
-
-	return (cp_cur + sizeof(struct ether_header));
-
-#endif
-
 err:
 	printf("Ether header: %s\t%s\n", option, value);
 	return NULL;
