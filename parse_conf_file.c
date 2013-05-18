@@ -2,42 +2,6 @@
 
 /* These values need be finalized later */
 
-int validate_if(const char *if_name) {
-	struct ifreq req;
-	int sockfd;
-	int ret;
-
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sockfd < 0) {
-		fprintf(stderr, "socket creation failed");
-		return -1;
-	}
-
-	memset(&req, 0, sizeof(struct ifreq));
-	strcpy(req.ifr_name, if_name);
-
-	if (ioctl(sockfd, SIOCGIFINDEX, &req) < 0) {
-		perror("get index failed");
-		goto err;
-	}
-
-	if (ioctl(sockfd, SIOCGIFFLAGS, &req) < 0) {
-		perror("get flags failed");
-		goto err;
-	}
-
-	if (!(req.ifr_flags & IFF_UP)) {
-		fprintf(stderr, "Interface is down\n");
-		goto err;
-	}
-
-	close(sockfd);
-	return 0;
-err:
-	close(sockfd);
-	return -1;
-}
-
 int set_option(struct packet_data *sp_pd, const char *option,
 	   const char* value) {
 

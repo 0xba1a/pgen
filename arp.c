@@ -14,36 +14,66 @@ struct arp_packet {
 	unsigned char dst_ip[4];
 };
 
-char* pgen_arp_hdr_writer(struct packet_data *sp_pd, char *cp_cur) {
+char* pgen_arp_writer(FILE *fp, char *cp_cur) {
 	struct arp_packet *pkt = (struct arp_packet *)cp_cur;
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	/* 9 values needed for an ARP packet */
+	int i = 9, tmp;
 
-	pkt->hw_type =  htons(sp_pd->arp_hw_type);
-	pkt->proto_type = htons(sp_pd->arp_proto_type);
-	pkt->hw_len = (unsigned char) sp_pd->arp_hw_len;
-	pkt->proto_len = (unsigned char) sp_pd->arp_proto_len;
-	pkt->op = htons(sp_pd->arp_opcode);
+	while (i--) {
+		if (pgen_parse_option(fp, option, value))
+			goto err;
 
-	if (mac_writer(pkt->src_mac, sp_pd->arp_src_mac)) {
-		fprintf(stderr, "ARP: src_mac convertion error\n");
-		goto err;
-	}
-
-	if (mac_writer(pkt->dst_mac, sp_pd->arp_dst_mac)) {
-		fprintf(stderr, "ARP: dst_mac convertion error\n");
-		goto err;
-	}
-
-	if (ip4_writer(pkt->src_ip, sp_pd->arp_src_ip)) {
-		fprintf(stderr, "ARP: src_ip convertion error\n");
-		goto err;
-	}
-
-	if (ip4_writer(pkt->dst_ip, sp_pd->arp_dst_ip)) {
-		fprintf(stderr, "ARP: dst_ip convertion error\n");
-		goto err;
+		if (!strcmp(option, "ARP_HW_TYPE")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->hw_type = htons(tmp);
+		}
+		else if (!strcmp(option, "ARP_HW_LEN")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->hw_len = (uint8_t)tmp;
+		}
+		else if (!strcmp(option, "ARP_PROTO_TYPE")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->proto_type = htons(tmp);
+		}
+		else if (!strcmp(option, "ARP_PROTO_LEN")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->proto_len = (uint8_t)tmp;
+		}
+		else if (!strcmp(option, "ARP_OPCODE")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->op = htons(tmp);
+		}
+		else if (!strcmp(option, "ARP_SRC_MAC")) {
+			if (mac_writer(pkt->src_mac, value))
+				goto err;
+		}
+		else if (!strcmp(option, "ARP_SRC_IP")) {
+			if (ip4_writer(pkt->src_ip, value))
+				goto err;
+		}
+		else if (!strcmp(option, "ARP_DST_MAC")) {
+			if (mac_writer(pkt->dst_mac, value))
+				goto err;
+		}
+		else if (!strcmp(option, "ARP_DST_IP")) {
+			if (ip4_writer(pkt->dst_ip, value))
+				goto err;
+		}
+		else {
+			fprintf(stderr, "ARP: Unknown option\n");
+			goto err;
+		}
 	}
 
 	return (cp_cur + sizeof(struct arp_packet));
 err:
+	fprintf(stderr, "ARP writing fails with options: %s and value: %s", 
+			option, value);
 	return NULL;
 }
