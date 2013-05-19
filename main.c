@@ -72,6 +72,9 @@ int main(int argc, char **argv) {
 		else if (!strcmp(option, "ARP")) {
 			cp_cur = pgen_arp_writer(fp, cp_cur);
 		}
+		else if (!strcmp(option, "IPV6")) {
+			cp_cur = pgen_ipv6_writer(fp, cp_cur);
+		}
 		else {
 			printf("Unknown option\n");
 			goto err;

@@ -264,19 +264,25 @@ next:
         }
 
         c = strchr(line, '=');
-        if (!c) {
-            perror("Syntax error in conf file\n");
-            goto err;
-        }
-
-        val = c + 1;
-        *c = '\0';
-        c = strchr(value, '\n');
-        if (c)
+		if (c) {
+            val = c + 1;
             *c = '\0';
+            c = strchr(value, '\n');
+            if (c)
+                *c = '\0';
+		    strcpy(value, val);
+		}
+		else {
+			val = c;
+			c = strchr(option, '\n');
+			if (c)
+				*c = '\0';
+			strcpy(value, "");
+		}
 
 		strcpy(option, op);
-		strcpy(value, val);
+		printf("option: %s\t, value %s\n", option, value);
+
 
        return 0; 
     }
