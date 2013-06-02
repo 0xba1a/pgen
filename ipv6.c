@@ -20,8 +20,16 @@ struct hbh_packet {
 	char data;
 };
 
+struct routing_hdr_packet {
+	uint8_t nxt_hdr;
+	uint8_t ext_len;
+	uint8_t type;
+	uint8_t seg_left;
+	uint8_t data;
+};
+
 int hbh_option_writer(char *buff, char *value) {
-	uint8_t byte;
+	uint8_t byte = 0;
 	uint32_t len = 0;
 
 	if ((buff == NULL) || (value == NULL))
@@ -29,17 +37,15 @@ int hbh_option_writer(char *buff, char *value) {
 
 	if (*value++ != '0' && (*value != 'x' || *value != 'X'))
 		goto err;
-	value++;
 
-	byte = 0;
-	while (*value != '\0') {
+	while (*(++value) != '\0') {
 		len++;
 		if (*value >= '0' && *value <= '9')
 			byte = byte * 16 + *value - '0';
 		else if (*value >= 'a' && *value <= 'f')
-			byte = byte * 16 + *value - 'a';
+			byte = byte * 16 + *value - 'a' + 10;
 		else if (*value >= 'A' && *value <= 'F')
-			byte = byte * 16 + *value - 'A';
+			byte = byte * 16 + *value - 'A' + 10;
 		else
 			goto err;
 
@@ -47,8 +53,6 @@ int hbh_option_writer(char *buff, char *value) {
 			*buff++ = byte;
 			byte = 0;
 		}
-
-		value++;
 	}
 
 	if (len % 2 != 0)
@@ -60,9 +64,60 @@ err:
 	return -1;
 }
 
+char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
+	struct routing_hdr_packet *pkt = (struct routing_hdr_packet *)cp_cur;
+	uint8_t option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	int32_t items = 5, tmp, len = 0, type, oitems;
+
+	while (items--) {
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+
+		if (!strcmp(option, "RH_NXT_HDR")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->nxt_hdr = (uint8_t)tmp;
+		}
+		else if (!strcmp(option, "RH_EXT_LEN")) {
+			if (pgen_store_dec(&len, value))
+				goto err;
+			pkt->ext_len = (uint8_t)len;
+		}
+		else if (!strcmp(option, "RH_TYPE")) {
+			if (pgen_store_dec(&type, value))
+				goto err;
+			pkt->type = (uint8_t)type;
+		}
+		else if (!strcmp(option, "RH_SEG_LEFT")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->seg_left = (uint8_t)tmp;
+		}
+		else if (!strcmp(option, "RH_DATA")) {
+			/* Type 0 Routing Header */
+			if (type == 0) {
+				oitems = len / 2;
+				while (oitems) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (strcmp(option, "RH_ADDR"))
+						goto err;
+					if (ip6_writer(((&pkt->data)+(((len/2)-oitems)*16)+4), value))
+						goto err;
+					oitems--;
+				}
+			}
+		}
+	}
+	return cp_cur + 8*(len+1);
+err:
+	fprintf(stderr, "Error at writing Routing Header\n");
+	return NULL;
+}
+
 char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 	struct hbh_packet *pkt = (struct hbh_packet *)cp_cur;
-	char option[MAX_OPTION_LEN], value [MAX_VALUE_LEN];
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
 	int items = 3, tmp, len = 0;
 
 	while (items--) {
@@ -167,6 +222,9 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 		if (!strcmp(option, "HOP_BY_HOP")) {
 			cp_cur = ipv6_hbh_writer(fp, cp_cur);
 		}
+		else if (!strcmp(option, "ROUTING_HEADER")) {
+			cp_cur = ipv6_routing_hdr_writer(fp, cp_cur);
+		}
 		else {
 			fprintf(stderr, "Unknown IPv6 extention header option\n");
 			goto err;
@@ -199,5 +257,6 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 	return cp_cur;
 
 err:
+	fprintf(stderr, "Unknown IPv6 option\n");
 	return NULL;
 }

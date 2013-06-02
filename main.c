@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 			cp_cur = pgen_ipv6_writer(fp, cp_cur);
 		}
 		else {
-			printf("Unknown option\n");
+			printf("Main: Unknown option\n");
 			goto err;
 		}
 		if (!cp_cur)
