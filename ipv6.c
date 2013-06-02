@@ -111,7 +111,8 @@ char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 	}
 	return cp_cur + 8*(len+1);
 err:
-	fprintf(stderr, "Error at writing Routing Header\n");
+	PGEN_INFO("Errno at writing Routing Header");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	return NULL;
 }
 
@@ -206,10 +207,8 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 			if (pgen_store_dec(&ext_hdrs, value))
 				goto err;
 		}
-		else {
-			fprintf(stderr, "Unknown IPv6 option\n");
+		else
 			goto err;
-		}
 	}
 	pkt->ver_tc_fw = htonl(pkt->ver_tc_fw);
 	cp_cur = cp_cur + sizeof(struct ipv6_packet);
@@ -225,10 +224,8 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 		else if (!strcmp(option, "ROUTING_HEADER")) {
 			cp_cur = ipv6_routing_hdr_writer(fp, cp_cur);
 		}
-		else {
-			fprintf(stderr, "Unknown IPv6 extention header option\n");
+		else
 			goto err;
-		}
 
 		if (cp_cur == NULL)
 			goto err;
@@ -257,6 +254,7 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 	return cp_cur;
 
 err:
-	fprintf(stderr, "Unknown IPv6 option\n");
+	PGEN_INFO("Unknown IPv6 Option");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	return NULL;
 }

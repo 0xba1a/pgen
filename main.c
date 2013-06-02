@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 	/* Open Conf file */
 	fp = fopen(conf_file, "r");
 	if (!fp) {
-		perror("Opening conf file");
+		PGEN_ERROR("fopen error", errno);
 		return -1;
 	}
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 	/* Allocating the packet itself ;) */
 	cp_buff = malloc(buff_size);
 	if (!cp_buff) {
-		perror("malloc");
+		PGEN_ERROR("malloc failed", errno);
 		goto err;
 	}
 	memset(cp_buff, 0, sizeof(buff_size));
@@ -76,25 +76,24 @@ int main(int argc, char **argv) {
 			cp_cur = pgen_ipv6_writer(fp, cp_cur);
 		}
 		else {
-			printf("Main: Unknown option\n");
+			PGEN_INFO("Unknown Option");
 			goto err;
 		}
 		if (!cp_cur)
 			goto err;
 	}
 
-
 	/* Send the packet in wire */
 	if (send_packet(if_name, dst_mac, cp_buff, buff_size)) {
-		fprintf(stderr, "Error while sending packet\n");
+		PGEN_INFO("send_packet failed");
 		goto err;
 	}
 
 	return 0;
 
 err:
-	fprintf(stderr, "ERROR CASE\n");
-	fprintf(stderr, "option: %s\tvalue: %s\n", option, value);
+	PGEN_INFO("ERROR CASE");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	fclose(fp);
 	/* free will accept NULL */
 	free(cp_buff);

@@ -1,7 +1,7 @@
 #include "pgen.h"
 
 void usage() {
-	printf("Usage : pgen [conf_file]\n");
+	PGEN_INFO("Usage: pgen [conf_file]\n");
 }
 
 int pgen_strcmp(const char *s1, const char *s2) {
@@ -18,7 +18,7 @@ int send_packet(const char *if_name, const char *dst_mac, const char *cp_buff,
 	/* Get the RAW socket */
     sockfd = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW);
     if (sockfd < 0) {
-        perror("socket");
+		PGEN_ERROR("socket", errno);
         goto err;
     }
 
@@ -26,7 +26,7 @@ int send_packet(const char *if_name, const char *dst_mac, const char *cp_buff,
     memset(&s_if_idx, 0, sizeof (struct ifreq));
     strcpy(s_if_idx.ifr_name, if_name);
     if (ioctl(sockfd, SIOCGIFINDEX, &s_if_idx) < 0) {
-        perror("ioctl, index");
+		PGEN_ERROR("ioctl", errno);
         goto err;
     }
 
@@ -34,7 +34,7 @@ int send_packet(const char *if_name, const char *dst_mac, const char *cp_buff,
     memset(&s_if_mac, 0, sizeof(struct ifreq));
     strcpy(s_if_mac.ifr_name, if_name);
     if (ioctl(sockfd, SIOCGIFHWADDR, &s_if_mac) < 0) {
-        perror("ioctl, hwaddr");
+		PGEN_ERROR("ioctl", errno);
         goto err;
     }
 
@@ -42,14 +42,14 @@ int send_packet(const char *if_name, const char *dst_mac, const char *cp_buff,
     s_sock_addr.sll_ifindex = s_if_idx.ifr_ifindex;
     s_sock_addr.sll_halen = ETH_ALEN;
     if (mac_writer(s_sock_addr.sll_addr, dst_mac)) {
-        fprintf(stderr, "SOCK: dst mac writing error\n");
+		PGEN_INFO("dst mac writing error");
         goto err;
     }
 
 	if (sendto(sockfd, cp_buff, buff_size, 0,
                 (struct sockaddr *)&s_sock_addr,
                 sizeof(struct sockaddr_ll)) < 0) {
-        perror("sendto");
+		PGEN_ERROR("sendto", errno);
         goto err;
     }
 	return 0;
@@ -85,7 +85,7 @@ int ip4_writer(char *dst, const char *src) {
 
 	struct in_addr *sin_addr = (struct in_addr *)dst;
 	if (inet_pton(AF_INET, src, sin_addr) == 0) {
-		fprintf(stderr, "invalid IP address\n");
+		PGEN_INFO("Invalid IP address");
 		return -1;
 	}
 	return 0;
@@ -118,7 +118,7 @@ int ip4_writer(char *dst, const char *src) {
 int ip6_writer(char *dst, const char *src) {
 	struct in6_addr *sin6_addr = (struct in6_addr *)dst;
 	if (inet_pton(AF_INET6, src, sin6_addr) == 0) {
-		fprintf(stderr, "Invalid IPv6 address\n");
+		PGEN_INFO("Invalid IPv6 address");
 		return -1;
 	}
 	return 0;
@@ -281,15 +281,15 @@ next:
 		}
 
 		strcpy(option, op);
-		printf("option: %s\t, value %s\n", option, value);
+		PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 
-
-       return 0; 
+		return 0; 
     }
 	return EOF;
 
 err:
-	printf("parse: %s\n", line);
+	PGEN_INFO("Parse Error");
+	PGEN_PRINT_DATA("Line: %s\n", line);
 	return 1;
 
 }
@@ -303,13 +303,6 @@ int pgen_store_dec(int *i, const char *c) {
 	return 0;
 }
 
-int pgen_strcpy(char *dst, const char *src) {
-	if (strncpy(dst, src, strlen(src)+1))
-		return 0;
-	perror("strncpy");
-	return -1;
-}
-
 int validate_if(const char *if_name) {
     struct ifreq req;
     int sockfd;
@@ -317,7 +310,7 @@ int validate_if(const char *if_name) {
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
-        fprintf(stderr, "socket creation failed");
+		PGEN_ERROR("Socket failed", errno);
         return -1;
     }
 
@@ -325,17 +318,17 @@ int validate_if(const char *if_name) {
     strcpy(req.ifr_name, if_name);
 
     if (ioctl(sockfd, SIOCGIFINDEX, &req) < 0) {
-        perror("get index failed");
+		PGEN_ERROR("ioctl", errno);
         goto err;
     }
 
     if (ioctl(sockfd, SIOCGIFFLAGS, &req) < 0) {
-        perror("get flags failed");
+		PGEN_ERROR("ioctl", errno);
         goto err;
     }
 
     if (!(req.ifr_flags & IFF_UP)) {
-        fprintf(stderr, "Interface is down\n");
+		PGEN_INFO("Interface is down");
         goto err;
     }
 

@@ -20,59 +20,20 @@
 #define MAX_VALUE_LEN 200
 #define MAX_LINE_LENGTH 1024
 
-struct packet_data {
-	/* common data */
-	char conf_file[PATH_MAX];
-	size_t buff_size;
+#define PGEN_INFO(MSG) do {                                                    \
+	fprintf(stdout, "File:%s, Line:%d, %s\n", __FILE__,	__LINE__, MSG);        \
+	} while(0)
+#define PGEN_ERROR(MSG, errno) do {                                            \
+	fprintf(stderr, "File:%s, Line:%d, %s, errno:%d\n", __FILE__, __LINE__,    \
+			MSG, errno);                                                       \
+	} while(0)
+#define PGEN_PRINT_DATA(...) do {                                              \
+	fprintf(stdout, __VA_ARGS__);                                              \
+	} while (0)
 
-	/* sending socket address info */
-	char if_name[IFNAMSIZ];
-	char pk_dst_mac[18];
-
-	/* ethernet header data */
-	int ether_hdr;
-	char src_mac[18];
-	char dst_mac[18];
-	int ether_type;
-
-	/* ARP packet data */
-	int arp;
-	int arp_hw_type;
-	int arp_proto_type;
-	int arp_hw_len;
-	int arp_proto_len;
-	int arp_opcode;
-	char arp_src_mac[18];
-	char arp_dst_mac[18];
-	char arp_src_ip[16];
-	char arp_dst_ip[16];
-
-	/* IPv6 Packet data */
-	int ipv6;
-	int ipv6_version;
-	int ipv6_traffic_class;
-	int ipv6_flow_label;
-	int ipv6_payload_length;
-	int ipv6_next_header;
-	int ipv6_hop_limit;
-	char ipv6_src[39];
-	char ipv6_dst[39];
-
-	/* ICMPv6 header data */
-	int icmp6;
-	int icmp6_type;
-	int icmp6_code;
-	int icmp6_checksum;
-	/* icmp6_type and the message could be different */
-	int icmp6_msg_type;
-
-};
-
-int pgen_set_option(struct packet_data *, const char *, const char *);
 char* pgen_ethr_hdr_writer(FILE *, char *);
 char* pgen_arp_writer(FILE *, char *);
 char* pgen_ipv6_writer(FILE *, char *);
-char* pgen_icmp6_writer(struct packet_data *, char *);
 
 /* Helpers */
 void usage();

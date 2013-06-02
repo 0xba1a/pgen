@@ -37,6 +37,7 @@ char* pgen_ethr_hdr_writer(FILE *fp, char *cp_cur) {
 	return (cp_cur + sizeof(struct ether_header));
 
 err:
-	printf("Ether header: %s\t%s\n", option, value);
+	PGEN_INFO("Unknown Ether Option");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	return NULL;
 }

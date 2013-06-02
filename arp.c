@@ -66,14 +66,14 @@ char* pgen_arp_writer(FILE *fp, char *cp_cur) {
 				goto err;
 		}
 		else {
-			fprintf(stderr, "ARP: Unknown option\n");
+			PGEN_INFO("Unknown ARP option");
 			goto err;
 		}
 	}
 
 	return (cp_cur + sizeof(struct arp_packet));
+
 err:
-	fprintf(stderr, "ARP writing fails with options: %s and value: %s", 
-			option, value);
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	return NULL;
 }
