@@ -28,6 +28,13 @@ struct routing_hdr_packet {
 	uint8_t data;
 };
 
+struct fragment_hdr {
+	uint8_t nxt_hdr;
+	uint8_t res;
+	uint16_t fo_res_m;
+	uint32_t identification;
+};
+
 int hbh_option_writer(char *buff, char *value) {
 	uint8_t byte = 0;
 	uint32_t len = 0;
@@ -62,6 +69,51 @@ int hbh_option_writer(char *buff, char *value) {
 
 err:
 	return -1;
+}
+
+char* ipv6_fragment_hdr_writer(FILE *fp, char *cp_cur) {
+	struct fragment_hdr *pkt = (struct fragment_hdr *)cp_cur;
+	uint8_t option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	int32_t items = 4, tmp;
+
+	pkt->fo_res_m = 0;
+
+	while (items--) {
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+
+		if (!strcmp(option, "FH_NXT_HDR")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->nxt_hdr = (uint8_t)tmp;
+		}
+		else if (!strcmp(option, "FH_OFFSET")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->fo_res_m |= (uint16_t)(tmp << 3);
+		}
+		else if (!strcmp(option, "FH_M_FLAG")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->fo_res_m |= (uint16_t)(tmp & 0x1);
+		}
+		else if (!strcmp(option, "FH_IDENTIFICATION")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->identification = htonl(tmp);
+		}
+		else
+			goto err;
+	}
+	pkt->fo_res_m = htons(pkt->fo_res_m);
+	pkt->res = 0;
+
+	return cp_cur + sizeof(struct fragment_hdr);
+
+err:
+	PGEN_INFO("Errno at writing Fragment Header");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
+	return NULL;
 }
 
 char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
@@ -223,6 +275,9 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 		}
 		else if (!strcmp(option, "ROUTING_HEADER")) {
 			cp_cur = ipv6_routing_hdr_writer(fp, cp_cur);
+		}
+		else if (!strcmp(option, "FRAGMENT_HEADER")) {
+			cp_cur = ipv6_fragment_hdr_writer(fp, cp_cur);
 		}
 		else
 			goto err;
