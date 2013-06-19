@@ -75,6 +75,9 @@ int main(int argc, char **argv) {
 		else if (!strcmp(option, "IPV6")) {
 			cp_cur = pgen_ipv6_writer(fp, cp_cur);
 		}
+		else if (!strcmp(option, "ICMP6")) {
+			cp_cur = pgen_icmp6_writer(fp, cp_cur);
+		}
 		else {
 			PGEN_INFO("Unknown Option");
 			goto err;
