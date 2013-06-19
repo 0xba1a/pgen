@@ -20,6 +20,12 @@ struct hbh_packet {
 	char data;
 };
 
+struct dh_packet {
+	uint8_t nxt_hdr;
+	uint8_t ext_len;
+	char data;
+};
+
 struct routing_hdr_packet {
 	uint8_t nxt_hdr;
 	uint8_t ext_len;
@@ -35,7 +41,7 @@ struct fragment_hdr {
 	uint32_t identification;
 };
 
-int hbh_option_writer(char *buff, char *value) {
+int option_writer(char *buff, char *value) {
 	uint8_t byte = 0;
 	uint32_t len = 0;
 
@@ -188,7 +194,7 @@ char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 			pkt->ext_len = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "HBH_OPTION")) {
-			len = hbh_option_writer(&pkt->data, value);
+			len = option_writer(&pkt->data, value);
 			if (len < 0)
 				goto err;
 		}
@@ -199,6 +205,43 @@ char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 
 err:
 	return NULL;
+}
+
+/*
+ * Even destination header is same as like Hob-by-Hop header, having different
+ * writer implementation will give better modulority.
+ */
+char* ipv6_destination_hdr_writer(FILE *fp, char *cp_cur) {
+    struct dh_packet *pkt = (struct dh_packet *)cp_cur;
+    char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+    int items = 3, tmp, len = 0;
+
+    while (items--) {
+        if (pgen_parse_option(fp, option, value))
+            goto err;
+
+        if (!strcmp(option, "DH_NXT_HDR")) {
+            if (pgen_store_dec(&tmp, value))
+                goto err;
+            pkt->nxt_hdr = (uint8_t)tmp;
+        }
+        else if (!strcmp(option, "DH_HDR_EXT_LEN")) {
+            if (pgen_store_dec(&tmp, value))
+                goto err;
+            pkt->ext_len = (uint8_t)tmp;
+        }
+        else if (!strcmp(option, "DH_OPTION")) {
+            len = option_writer(&pkt->data, value);
+            if (len < 0)
+                goto err;
+        }
+        else
+            goto err;
+    }
+    return (cp_cur + len + 2);
+
+err:
+    return NULL;
 }
 
 char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
@@ -278,6 +321,9 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 		}
 		else if (!strcmp(option, "FRAGMENT_HEADER")) {
 			cp_cur = ipv6_fragment_hdr_writer(fp, cp_cur);
+		}
+		else if (!strcmp(option, "DESTINATION_HEADER")) {
+			cp_cur = ipv6_destination_hdr_writer(fp, cp_cur);
 		}
 		else
 			goto err;
