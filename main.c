@@ -92,6 +92,7 @@ int main(int argc, char **argv) {
 		goto err;
 	}
 
+	free(cp_buff);
 	return 0;
 
 err:

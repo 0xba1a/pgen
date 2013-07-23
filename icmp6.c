@@ -9,7 +9,23 @@ struct icmp6_hdr{
 struct echo6_pkt {
 	uint16_t identifier;
 	uint16_t seq_num;
+	/**
+	 * data is just a place holder. It only specifies the starting address.
+	 * The entire value from ECHO6_DATA option will be dumped here.
+	 * So user should take care of the buffer size.
+	 */
 	uint8_t data;
+};
+
+struct ndisc_ns_pkt {
+	uint32_t reserved;
+	uint8_t target_addr[16];
+	/**
+	 * data is just a place holder. It only specifies the starting address.
+	 * The entire value from NDISC_NS_OPTION option will be dumped here.
+	 * So user should take care of the buffer size.
+	 */
+	uint8_t option;
 };
 
 int calculate_icmp6_checksum(struct icmp6_hdr *pkt, int len, FILE *fp) {
@@ -131,6 +147,70 @@ err:
 	return NULL;
 }
 
+char* pgen_ndisc_ns_writer(FILE *fp, char *cp_cur) {
+	struct ndisc_ns_pkt *pkt = (struct ndisc_ns_pkt *)cp_cur;
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	/* Having only two items. 1.Target address 2.Option */
+	int items = 2, tmp, op_len;
+
+	while (items--) {
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+
+		if (!strcmp(option, "NDISC_NS_TARGET_ADDR")) {
+			if (ip6_writer(pkt->target_addr, value))
+				goto err;
+		}
+		else if (!strcmp(option, "NDISC_NS_OPTION")) {
+			if (!strcmp(value, "NO_OPTION"))
+				op_len = 0;
+			/* This is only known option as of now. [RFC-4861] */
+			else if (!strcmp(value, "NDISC_NS_SRC_LINK_ADDR")) {
+				char *op_ptr = (char *)&(pkt->option);
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "NDISC_NS_OP_TYPE")) {
+					if (pgen_store_dec(&tmp, value))
+						goto err;
+					*op_ptr = (uint8_t)tmp;
+					op_ptr++;
+				}
+				else
+					goto err;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "NDISC_NS_OP_LEN")) {
+					if (pgen_store_dec(&tmp, value))
+						goto err;
+					*op_ptr = (uint8_t)tmp;
+					op_ptr++;
+				}
+				else
+					goto err;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "NDISC_NS_OP_SRC_LINK_ADDR")) {
+					if (mac_writer(op_ptr, value))
+						goto err;
+				}
+
+				/* len is in 8 octets uint */
+				op_len = tmp * 8;
+			}
+		}
+		else
+			goto err;
+	}
+
+	/* len = Reserved(4) + Target_addr(16) + op_len */
+	return (cp_cur + 4 + 16 + op_len);
+err:
+	return NULL;
+}
+
 char* pgen_icmp6_writer(FILE *fp, char *cp_cur) {
 	struct icmp6_hdr *pkt = (struct icmp6_hdr *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
@@ -171,6 +251,8 @@ char* pgen_icmp6_writer(FILE *fp, char *cp_cur) {
 		cp_cur = pgen_echo6_writer(fp, cp_cur);
 	else if (!strcmp(option, "ECHO_REP"))
 		cp_cur = pgen_echo6_writer(fp, cp_cur);
+	else if (!strcmp(option, "NDISC_NS"))
+		cp_cur = pgen_ndisc_ns_writer(fp, cp_cur);
 	else
 		goto err;
 
