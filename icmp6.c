@@ -122,19 +122,19 @@ char* pgen_echo6_writer(FILE *fp, char *cp_cur) {
 		if (pgen_parse_option(fp, option, value))
 			goto err;
 
-		if (!strcmp(option, "echo6_IDENTIFIER")) {
+		if (!strcmp(option, "ECHO6_IDENTIFIER")) {
 			if (pgen_store_dec(&tmp, value))
 				goto err;
 			pkt->identifier = (uint16_t)tmp;
 		}
-		else if (!strcmp(option, "echo6_SEQ")) {
+		else if (!strcmp(option, "ECHO6_SEQ")) {
 			if (pgen_store_dec(&tmp, value))
 				goto err;
 			pkt->identifier = (uint16_t)tmp;
 		}
-		else if (!strcmp(option, "echo6_DATA")) {
+		else if (!strcmp(option, "ECHO6_DATA")) {
 			if (!strcmp(value, "NO_DATA"))
-				continue;
+				len = 0;
 			else {
 				len = option_writer(&(pkt->data), value);
 				if (len == 0)
