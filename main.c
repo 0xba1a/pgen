@@ -86,6 +86,12 @@ int main(int argc, char **argv) {
 			goto err;
 	}
 
+	/* Cut the extra bytes */
+	buff_size = cp_cur - cp_buff;
+	if (buff_size < 0)
+		buff_size *= -1;
+	cp_buff = realloc((void *)cp_buff, buff_size);
+
 	/* Send the packet in wire */
 	if (send_packet(if_name, dst_mac, cp_buff, buff_size)) {
 		PGEN_INFO("send_packet failed");

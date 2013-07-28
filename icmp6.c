@@ -125,12 +125,12 @@ char* pgen_echo6_writer(FILE *fp, char *cp_cur) {
 		if (!strcmp(option, "ECHO6_IDENTIFIER")) {
 			if (pgen_store_dec(&tmp, value))
 				goto err;
-			pkt->identifier = (uint16_t)tmp;
+			pkt->identifier = htons(tmp);
 		}
 		else if (!strcmp(option, "ECHO6_SEQ")) {
 			if (pgen_store_dec(&tmp, value))
 				goto err;
-			pkt->identifier = (uint16_t)tmp;
+			pkt->seq_num = htons(tmp);
 		}
 		else if (!strcmp(option, "ECHO6_DATA")) {
 			if (!strcmp(value, "NO_DATA"))
