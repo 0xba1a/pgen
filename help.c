@@ -162,6 +162,46 @@ err:
 #endif
 }
 
+int ip6_prefix_writer(char *dst, char *value) {
+	uint32_t i, one_char, two_char, pos = 1;
+	char tmp[IPV6_ADDR_MAX_LEN] = {0};
+
+	if (ip6_expander(tmp, value))
+		goto err;
+
+	printf("%s\n", tmp);
+
+	for (i = 0; i < strlen(tmp); i++) {
+		if ((tmp[i] >= 'a') && (tmp[i] <= 'f'))
+			one_char = tmp[i] - 'a' + 10;
+		else if ((tmp[i] >= 'A') && (tmp[i] <= 'F'))
+			one_char = tmp[i] - 'A' + 10;
+		else if ((tmp[i] >= '0') && (tmp[i] <= '9'))
+			one_char = tmp[i] - '0';
+		else if (tmp[i] == ':')
+			continue;
+		else
+			goto err;
+
+		if (pos == 1) {
+			two_char = one_char;
+			pos = 2;
+		}
+		else if (pos == 2) {
+			two_char = two_char << 4;
+			two_char = two_char | one_char;
+			*dst = (uint8_t)two_char;
+			dst++;
+			pos = 1;
+		}
+	}
+
+	return 0;
+
+err:
+	return -1;
+}
+
 int ip6_expander(char *dst, const char *src) {
 	int len, rem, dots;
 	int i, j = 0, k = 0, nxt_col;
@@ -338,4 +378,3 @@ err:
     close(sockfd);
     return -1;
 }
-

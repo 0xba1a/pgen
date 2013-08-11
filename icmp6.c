@@ -50,6 +50,21 @@ struct ndisc_rs_pkt {
 	uint8_t option;
 };
 
+struct ndisc_ra_pkt {
+	uint8_t cur_hop_limit;
+	/* m(1) + o(1) + res(6) */
+	uint8_t m_o_res;
+	uint16_t router_lifetime;
+	uint32_t reachable_time;
+	uint32_t retrans_timer;
+	/**
+	 * data is just a place holder. It only specifies the starting address.
+	 * The entire value from NDISC_NS_OPTION option will be dumped here.
+	 * So user should take care of the buffer size.
+	 */
+	uint8_t option;
+};
+
 int calculate_icmp6_checksum(struct icmp6_hdr *pkt, int len, FILE *fp) {
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
 	uint32_t checksum = 0;
@@ -169,11 +184,312 @@ err:
 	return NULL;
 }
 
+char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
+	struct ndisc_ra_pkt *pkt = (struct ndisc_ra_pkt *)cp_cur;
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+
+	/**
+	 * Having 7 items
+	 * 1. Cur_Hop_Limit - 1B
+	 * 2. M flag - 1b
+	 * 3. O flag - 1b
+	 * 4. Router Lifetime - 2B
+	 * 5. Reachable Time - 4B
+	 * 6. Retrans Time - 4B
+	 * 7. Option - variable length
+	 *----------------------------
+	 * 8. Total number of options
+	 */
+	int items = 8, tmp, op_len = 0, op_num;
+	char *op;
+
+	while (items--) {
+		printf("outer while loop\n");
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+
+		if (!strcmp(option, "NDISC_RA_CUR_HOP_LIMIT")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->cur_hop_limit = (uint8_t)tmp;
+		}
+		else if (!strcmp(option, "NDISC_RA_M_FLAG")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			if (tmp)
+				pkt->m_o_res |= 0x80;
+		}
+		else if (!strcmp(option, "NDISC_RA_O_FLAG")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			if (tmp)
+				pkt->m_o_res |= 0x40;
+		}
+		else if (!strcmp(option, "NDISC_RA_ROUTER_LIFETIME")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->router_lifetime = htons(tmp);
+		}
+		else if (!strcmp(option, "NDISC_RA_REACHABLE_TIME")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->reachable_time = htonl(tmp);
+		}
+		else if (!strcmp(option, "NDISC_RA_RETRANS_TIMER")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			pkt->retrans_timer = htonl(tmp);
+		}
+		else if (!strcmp(option, "NDISC_RA_OPTION_NUM")) {
+			if (pgen_store_dec(&tmp, value))
+				goto err;
+			op_num = tmp;
+		}
+		else if (!strcmp(option, "NDISC_RA_OPTION")) {
+			op = (char *)&(pkt->option);
+
+			/**
+			 * Only three known options as of now [RFC-4681] 
+			 * 1. Source Link Address
+			 * 2. Prefix Information
+			 * 3. MTU
+			 */
+
+			while (op_num--) {
+				printf("\n\n In while loop, %s %d\n\n", value, op_num);
+				if (!strcmp(value, "NO_OPTION"))
+					op_len = 0;
+
+				else if (!strcmp(value, "NDISC_RA_SRC_LINK_ADDR")) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						op++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						op++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_LEN_ORIG")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						op_len += tmp * 8;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_SRC_LINK_ADDR")) {
+						if (mac_writer(op, value))
+							goto err;
+						op += 6;
+					}
+					else
+						goto err;
+				}
+				else if (!strcmp(value, "NDISC_RA_PREFIX_INFO")) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						op++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						op++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_LEN_ORIG")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						op_len += tmp * 8;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_PREFIX_LEN")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						op++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_L_FLAG")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						if (tmp)
+							*op |= 0x80;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_A_FLAG")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						if (tmp)
+							*op |= 0x40;
+					}
+					else
+						goto err;
+
+					op++;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_PREFIX_VALID_LIFETIME")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						tmp = htonl(tmp);
+						memcpy(op, &tmp, 4);
+						op += 4;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_PREFIX_PREFERRED_LIFETIME")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						tmp = htonl(tmp);
+						memcpy(op, &tmp, 4);
+						op += 4;
+					}
+					else
+						goto err;
+
+					/* 4 Bytes Reserved */
+					op += 4;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_PREFIX")) {
+						if (ip6_prefix_writer(op, value))
+							goto err;
+						op += 16;
+					}
+					else
+						goto err;
+				}
+				else if (!strcmp(value, "NDISC_RA_MTU")) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_TYPE")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						op++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_LEN")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						op++;
+					}
+					else
+						goto err;
+
+					/* 2 Bytes Reserverd */
+					op += 2;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_LEN_ORIG")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						op_len += tmp * 8;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_MTU")) {
+						if (pgen_store_dec(&tmp, value))
+							goto err;
+						tmp = htonl(tmp);
+						memcpy(op, &tmp, 4);
+						op += 4;
+					}
+					else
+						goto err;
+				}
+				else {
+					printf("4");
+					goto err;
+				}
+
+				if (op_num && pgen_parse_option(fp, option, value)) {
+					printf("3");
+					goto err;
+				}
+				if (op_num && strcmp(option, "NDISC_RA_OPTION")) {
+					printf("2");
+					goto err;
+				}
+			}
+		}
+		else {
+			printf("1");
+			goto err;
+		}
+	}
+
+	printf("\n\nExiting\n");
+	printf("\n\n %d \n\n", op_len);
+	return (cp_cur + 16 + op_len);
+
+err:
+	printf("\n\n Error\n");
+	return NULL;
+}
+
 char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
 	struct ndisc_rs_pkt *pkt = (struct ndisc_rs_pkt *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
 
-printf("\n\n IN RS WRITER\n\n");
 	/**
 	 * Having 1 item
 	 * 1. Option - variable length
@@ -447,6 +763,8 @@ char* pgen_icmp6_writer(FILE *fp, char *cp_cur) {
 		cp_cur = pgen_ndisc_na_writer(fp, cp_cur);
 	else if (!strcmp(option, "NDISC_RS"))
 		cp_cur = pgen_ndisc_rs_writer(fp, cp_cur);
+	else if (!strcmp(option, "NDISC_RA"))
+		cp_cur = pgen_ndisc_ra_writer(fp, cp_cur);
 	else
 		goto err;
 
