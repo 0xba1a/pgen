@@ -39,6 +39,17 @@ struct ndisc_na_pkt {
 	uint8_t option;
 };
 
+struct ndisc_rs_pkt {
+	/* Reserved Field. Initialized to zero */
+	uint32_t res;
+	/**
+	 * data is just a place holder. It only specifies the starting address.
+	 * The entire value from NDISC_NS_OPTION option will be dumped here.
+	 * So user should take care of the buffer size.
+	 */
+	uint8_t option;
+};
+
 int calculate_icmp6_checksum(struct icmp6_hdr *pkt, int len, FILE *fp) {
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
 	uint32_t checksum = 0;
@@ -154,6 +165,81 @@ char* pgen_echo6_writer(FILE *fp, char *cp_cur) {
 		}
 	}
 	return cp_cur + len + 4;
+err:
+	return NULL;
+}
+
+char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
+	struct ndisc_rs_pkt *pkt = (struct ndisc_rs_pkt *)cp_cur;
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+
+printf("\n\n IN RS WRITER\n\n");
+	/**
+	 * Having 1 item
+	 * 1. Option - variable length
+	 */
+	int  tmp, op_len;
+
+	if (pgen_parse_option(fp, option, value))
+		goto err;
+
+	if (!strcmp(option, "NDISC_RS_OPTION")) {
+		if (!strcmp(value, "NO_OPTION"))
+			op_len = 0;
+		else if (!strcmp(value, "NDISC_RS_SRC_LINK_ADDR")) {
+			char *op = (char *)&(pkt->option);
+
+			if (pgen_parse_option(fp, option, value))
+				goto err;
+			if (!strcmp(option, "NDISC_RS_OP_TYPE")) {
+				if (pgen_store_dec(&tmp, value))
+					goto err;
+				*op = (uint8_t)tmp;
+				op++;
+			}
+			else
+				goto err;
+
+			if (pgen_parse_option(fp, option, value))
+				goto err;
+			if (!strcmp(option, "NDISC_RS_OP_LEN")) {
+				if (pgen_store_dec(&tmp, value))
+					goto err;
+				*op = (uint8_t)tmp;
+				op++;
+			}
+			else
+				goto err;
+
+			if (pgen_parse_option(fp, option, value))
+				goto err;
+			if (!strcmp(option, "NDISC_RS_OP_LEN_ORIG")) {
+				if (pgen_store_dec(&tmp, value))
+					goto err;
+				op_len = tmp * 8;
+			}
+			else
+				goto err;
+
+			if (pgen_parse_option(fp, option, value))
+				goto err;
+			if (!strcmp(option, "NDISC_RS_OP_SRC_LINK_ADDR")) {
+				if (mac_writer(op, value))
+					goto err;
+				op += 6;
+			}
+			else
+				goto err;
+		}
+		else
+			goto err;
+	}
+	else
+		goto err;
+
+	/* len = res(4) + op_len */
+	return (cp_cur + 4 + op_len);
+
 err:
 	return NULL;
 }
@@ -359,6 +445,8 @@ char* pgen_icmp6_writer(FILE *fp, char *cp_cur) {
 		cp_cur = pgen_ndisc_ns_writer(fp, cp_cur);
 	else if (!strcmp(option, "NDISC_NA"))
 		cp_cur = pgen_ndisc_na_writer(fp, cp_cur);
+	else if (!strcmp(option, "NDISC_RS"))
+		cp_cur = pgen_ndisc_rs_writer(fp, cp_cur);
 	else
 		goto err;
 
