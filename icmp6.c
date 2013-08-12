@@ -204,7 +204,6 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 	char *op;
 
 	while (items--) {
-		printf("outer while loop\n");
 		if (pgen_parse_option(fp, option, value))
 			goto err;
 
@@ -256,7 +255,6 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 			 */
 
 			while (op_num--) {
-				printf("\n\n In while loop, %s %d\n\n", value, op_num);
 				if (!strcmp(value, "NO_OPTION"))
 					op_len = 0;
 
@@ -456,33 +454,22 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					else
 						goto err;
 				}
-				else {
-					printf("4");
+				else
 					goto err;
-				}
 
-				if (op_num && pgen_parse_option(fp, option, value)) {
-					printf("3");
+				if (op_num && pgen_parse_option(fp, option, value))
 					goto err;
-				}
-				if (op_num && strcmp(option, "NDISC_RA_OPTION")) {
-					printf("2");
+				if (op_num && strcmp(option, "NDISC_RA_OPTION"))
 					goto err;
-				}
 			}
 		}
-		else {
-			printf("1");
+		else
 			goto err;
-		}
 	}
 
-	printf("\n\nExiting\n");
-	printf("\n\n %d \n\n", op_len);
-	return (cp_cur + 16 + op_len);
+	return (cp_cur + 12 + op_len);
 
 err:
-	printf("\n\n Error\n");
 	return NULL;
 }
 
