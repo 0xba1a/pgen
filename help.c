@@ -202,6 +202,9 @@ err:
 	return -1;
 }
 
+/**
+ * This is used to expand the IPv6 shorter form into its expanded form.
+ */
 int ip6_expander(char *dst, const char *src) {
 	int len, rem, dots;
 	int i, j = 0, k = 0, nxt_col;
@@ -210,6 +213,7 @@ int ip6_expander(char *dst, const char *src) {
 	if (!dst || !src)
 		goto err;
 
+	/* :: is the shortest form of IPv6 address - All zero IPv6 addr */
 	if (!strcmp(src, "::")) {
 		strcpy(dst, "0000:0000:0000:0000:0000:0000:0000:0000");
 		return 0;
@@ -217,6 +221,7 @@ int ip6_expander(char *dst, const char *src) {
 
 	len = strlen(src);
 
+	/* First expand all segments to four charcters each - [:89: --> :0089:] */
 	for (i = 0; i < len; i++) {
 		temp[j] = src[i];
 		if (temp[j] == ':') {
@@ -249,6 +254,7 @@ int ip6_expander(char *dst, const char *src) {
 		intr[k++] = '0';
 	strcpy((intr+k), temp);
 
+	/* Fill the remaining zeros between :: */
 	len = strlen(intr);
 	for (i = 0, j = 0; i < len; i++) {
 		dst[j] = intr[i];
@@ -272,16 +278,24 @@ err:
 	return -1;
 }
 
+/**
+ * To parse the configuration file.
+ * It reads one line at a time and parses the option & value
+ * and returns them to the caller with the pointers supplied.
+ */
 int pgen_parse_option(FILE *fp, char *option, char *value) {
 	char line[MAX_LINE_LENGTH];
 	char *c = NULL, *op, *val;
 	char ch;
 
+	if (!fp || !option || !value)
+		goto err;
+
 next:
 	while (fscanf(fp, "%s", line) != EOF) {
         op = line;
 
-		/* Ignore multiple line comments */
+		/* Ignore multiline comments */
 		if (line[0] == '/' && line[1] == '*') {
 			while (fscanf(fp, "%c", &ch) != EOF)
 				if (ch == '*')
@@ -292,7 +306,6 @@ next:
 					else
 						goto err;
 			goto err;
-
 		}
 
         /* Ignore single line comments */
@@ -303,25 +316,25 @@ next:
             continue;
         }
 
+		/* In case 'Option=Value' combination */
         c = strchr(line, '=');
 		if (c) {
             val = c + 1;
             *c = '\0';
-            c = strchr(value, '\n');
+            c = strchr(val, '\n');
             if (c)
                 *c = '\0';
 		    strcpy(value, val);
 		}
+		/* Else only 'Option'. f.e IPV6 */
 		else {
-			val = c;
-			c = strchr(option, '\n');
+			c = strchr(op, '\n');
 			if (c)
 				*c = '\0';
 			strcpy(value, "");
 		}
 
 		strcpy(option, op);
-		PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 
 		return 0; 
     }
@@ -331,9 +344,13 @@ err:
 	PGEN_INFO("Parse Error");
 	PGEN_PRINT_DATA("Line: %s\n", line);
 	return 1;
-
 }
 
+/**
+ * Converts character numbers into their decimal values.
+ * As it depends on strtol, this function doesn't bother about
+ * rear non-number characters.
+ */
 int pgen_store_dec(int *i, const char *c) {
 	errno = 0;
 	*i = strtol(c, NULL, 10);
@@ -350,23 +367,33 @@ int validate_if(const char *if_name) {
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
-		PGEN_ERROR("Socket failed", errno);
+		PGEN_ERROR("Socket creation failed", errno);
         return -1;
     }
 
     memset(&req, 0, sizeof(struct ifreq));
     strcpy(req.ifr_name, if_name);
 
+	/**
+	 * Get Interface index for the given interface name.
+	 * If index is available, it confirms that the interface
+	 * is a valid one.
+	 */
     if (ioctl(sockfd, SIOCGIFINDEX, &req) < 0) {
-		PGEN_ERROR("ioctl", errno);
+		PGEN_ERROR("ioctl - Get index", errno);
         goto err;
     }
 
+	/* Get flags related to the interface */
     if (ioctl(sockfd, SIOCGIFFLAGS, &req) < 0) {
-		PGEN_ERROR("ioctl", errno);
+		PGEN_ERROR("ioctl - Get flags", errno);
         goto err;
     }
 
+	/**
+	 * Check whether the interface is UP.
+	 * This doesn't check whether the interface is connected or not.
+	 */
     if (!(req.ifr_flags & IFF_UP)) {
 		PGEN_INFO("Interface is down");
         goto err;

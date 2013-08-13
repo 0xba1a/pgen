@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 	memset(cp_buff, 0, sizeof(buff_size));
 	cp_cur = cp_buff;
 
-	/* write the data packet */
+	/* write data in the packet buffer */
 	while (pgen_parse_option(fp, option, value) != EOF) {
 		if (!strcmp(option, "ETHER_HEADER")) {
 			cp_cur = pgen_ethr_hdr_writer(fp, cp_cur);
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 			cp_cur = pgen_icmp6_writer(fp, cp_cur);
 		}
 		else {
-			PGEN_INFO("Unknown Option");
+			PGEN_INFO("Packet type not yet supported");
 			goto err;
 		}
 		if (!cp_cur)
@@ -88,6 +88,7 @@ int main(int argc, char **argv) {
 
 	/* Cut the extra bytes */
 	buff_size = cp_cur - cp_buff;
+	/* Heap might grow in either direction */
 	if (buff_size < 0)
 		buff_size *= -1;
 	cp_buff = realloc((void *)cp_buff, buff_size);
@@ -98,6 +99,9 @@ int main(int argc, char **argv) {
 		goto err;
 	}
 
+	PGEN_INFO("SUCCESS");
+	fclose(fp);
+	/* free will accept NULL also */
 	free(cp_buff);
 	return 0;
 
@@ -105,7 +109,7 @@ err:
 	PGEN_INFO("ERROR CASE");
 	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	fclose(fp);
-	/* free will accept NULL */
+	/* free will accept NULL also */
 	free(cp_buff);
 
 	return -1;
