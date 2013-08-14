@@ -1,9 +1,11 @@
 #include "pgen.h"
 
-/* It starts exactly from here */
-int main(int argc, char **argv) {
+/**
+ * It starts exactly here
+ */
+int32_t main(int32_t argc, char **argv) {
 	FILE *fp;
-	int buff_size;
+	int32_t buff_size;
 	char if_name[IFNAMSIZ];
 	char dst_mac[CHAR_MAC_LEN];
 	char *cp_buff = NULL;
