@@ -14,11 +14,35 @@ struct arp_packet {
 	unsigned char dst_ip[4];
 };
 
+/**
+ * @param	fp		file pointer for the configuration file
+ * @param	cp_cur	The packet buffer
+ *
+ * @return
+ *			0		Success
+ *			-1		Failure
+ *
+ * @Description
+ *		This function fills the packet buffer with user configured values.
+ * It actually writes an ARP packet in the buffer.
+ */
 char* pgen_arp_writer(FILE *fp, char *cp_cur) {
 	struct arp_packet *pkt = (struct arp_packet *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
-	/* 9 values needed for an ARP packet */
-	int i = 9, tmp;
+	/**
+	 * Totally 9 items need to build or actually fill in an ARP packet
+	 *
+	 * 1. Hardware addr type
+	 * 2. Hardware addr length
+	 * 3. Protocol addr type
+	 * 4. Protocol addr length
+	 * 5. Operation code [request/reply]
+	 * 6. Source Hardware addr
+	 * 7. Source IP addr
+	 * 8. Destination Hardware addr
+	 * 9. Destination IP addr
+   	 */
+	int32_t i = 9, tmp;
 
 	while (i--) {
 		if (pgen_parse_option(fp, option, value))
@@ -74,6 +98,6 @@ char* pgen_arp_writer(FILE *fp, char *cp_cur) {
 	return (cp_cur + sizeof(struct arp_packet));
 
 err:
-	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
+	PGEN_INFO("Error while writing ARP packet");
 	return NULL;
 }
