@@ -6,10 +6,27 @@ struct ether_header {
 	unsigned short ether_type;
 };
 
+/**
+ * @param	fp		file pointer to the configuration file
+ * @param	cp_cur	the packet data
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Writes ether-header to the packet buffer
+ */
 char* pgen_ethr_hdr_writer(FILE *fp, char *cp_cur) {
 	struct ether_header *pkt = (struct ether_header *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
-	/* 3 ether options from conf file */
+	/**
+	 * Ether header nees 3 items
+	 *
+	 * 1. Destination mac address
+	 * 2. Source mac address
+	 * 3. Ether type. The type of the packet it holds
+	 */
 	int i = 3, tmp;
 
 	while (i--) {
@@ -37,7 +54,6 @@ char* pgen_ethr_hdr_writer(FILE *fp, char *cp_cur) {
 	return (cp_cur + sizeof(struct ether_header));
 
 err:
-	PGEN_INFO("Unknown Ether Option");
-	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
+	PGEN_INFO("Error while writing ether header");
 	return NULL;
 }
