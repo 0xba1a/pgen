@@ -41,16 +41,36 @@ struct fragment_hdr {
 	uint32_t identification;
 };
 
+/**
+ * @param	buff	Destination pointer where the option will be stored
+ * @param	value	User given hex value that will be stored in the destination
+ *					pointer
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		IPv6 extension headers have multiple variable length options. As of now
+ * This program doesn't recognize any option and handle it. So it requires the
+ * user to give hex value of the option directly through configuration file.
+ * This function stores the variable length hex value in the destination
+ * pointer.
+ */
+
 int option_writer(char *buff, char *value) {
 	uint8_t byte = 0;
 	uint32_t len = 0;
 
+	/* NULL check */
 	if ((buff == NULL) || (value == NULL))
 		goto err;
 
+	/* expects user to use 0x/0X prefix for the hex option value */
 	if (*value++ != '0' && (*value != 'x' || *value != 'X'))
 		goto err;
 
+	/* Read a nibble at a time and write a byte */
 	while (*(++value) != '\0') {
 		len++;
 		if (*value >= '0' && *value <= '9')
@@ -68,18 +88,39 @@ int option_writer(char *buff, char *value) {
 		}
 	}
 
+	/* length of the hex value must be in even */
 	if (len % 2 != 0)
 		goto err;
 	else
+		/* Return length of option */
 		return len/2;
 
 err:
 	return -1;
 }
 
+/**
+ * @param	fp		File pointer to the configuration value
+ * @param	cp_cur	The packet buffer
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Writes fragment header in the packet buffer
+ */
 char* ipv6_fragment_hdr_writer(FILE *fp, char *cp_cur) {
 	struct fragment_hdr *pkt = (struct fragment_hdr *)cp_cur;
 	uint8_t option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	/**
+	 * Totally 4 items need for fragment header. [RFC-2460]
+	 *
+	 * 1. Next header
+	 * 2. Fragment offset
+	 * 3. M flag
+	 * 4. Fragment identification
+	 */
 	int32_t items = 4, tmp;
 
 	pkt->fo_res_m = 0;
@@ -117,14 +158,33 @@ char* ipv6_fragment_hdr_writer(FILE *fp, char *cp_cur) {
 	return cp_cur + sizeof(struct fragment_hdr);
 
 err:
-	PGEN_INFO("Errno at writing Fragment Header");
-	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
+	PGEN_INFO("Error while writing Fragment Header");
 	return NULL;
 }
 
+/**
+ * @param	fp		File pointer to the configuration file
+ * @param	cp_cur	The packet buffer
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Writes IPv6 Routing header
+ */
 char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 	struct routing_hdr_packet *pkt = (struct routing_hdr_packet *)cp_cur;
 	uint8_t option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	/**
+	 * 5 items need for writing routing header [RFC-2460]
+	 *
+	 * 1. Next header
+	 * 2. Header extension length
+	 * 3. Routing type
+	 * 4. Segments left
+	 * 5. Type specific data
+	 */
 	int32_t items = 5, tmp, len = 0, type, oitems;
 
 	while (items--) {
@@ -152,8 +212,16 @@ char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 			pkt->seg_left = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "RH_DATA")) {
-			/* Type 0 Routing Header */
+			/**
+			 * As of now, the only known routing header for this program is
+			 * type 0 Routing Header. [RFC-2460]
+			 */
 			if (type == 0) {
+				/**
+				 * [RFC-2460]
+				 * For the Type 0 Routing header, Hdr Ext Len is equal to two
+				 * times the number of addresses in the header.
+				 */
 				oitems = len / 2;
 				while (oitems) {
 					if (pgen_parse_option(fp, option, value))
@@ -168,15 +236,33 @@ char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 		}
 	}
 	return cp_cur + 8*(len+1);
+
 err:
-	PGEN_INFO("Errno at writing Routing Header");
-	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
+	PGEN_INFO("Error while writing Routing Header");
 	return NULL;
 }
 
+/**
+ * @param	fp		file pointer to the configuration file
+ * @param	cp_cur	the packet buffer
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Writing IPv6 hop-by-hop option header
+ */
 char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 	struct hbh_packet *pkt = (struct hbh_packet *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	/**
+	 * 3 items for IPv6 hop-by-hop option header
+	 *
+	 * 1. Next header
+	 * 2. Header extension length
+	 * 3. Options
+	 */
 	int items = 3, tmp, len = 0;
 
 	while (items--) {
@@ -194,6 +280,11 @@ char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 			pkt->ext_len = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "HBH_OPTION")) {
+			/**
+			 * [RFC-2460]
+			 * The only hop-by-hop options defined in this document are the
+			 * Pad1 and PadN
+			 */
 			len = option_writer(&pkt->data, value);
 			if (len < 0)
 				goto err;
@@ -204,16 +295,33 @@ char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 	return (cp_cur + len + 2);
 
 err:
+	PGEN_INFO("Error while writing IPv6 Hop-by-Hop option header");
 	return NULL;
 }
 
-/*
- * Even destination header is same as like Hob-by-Hop header, having different
- * writer implementation will give better modulority.
+/**
+ * @param	fp		file pointer to the configuration file
+ * @param	cp_cur	The packet data
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Writes IPv6 destination option header.
+ * 		Even destination header is same as like Hob-by-Hop header, having
+ * different writer implementation will give better modulority.
  */
 char* ipv6_destination_hdr_writer(FILE *fp, char *cp_cur) {
     struct dh_packet *pkt = (struct dh_packet *)cp_cur;
     char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	/**
+	 * 3 options need for IPv6 Destination option header
+	 *
+	 * 1. Next header
+	 * 2. Header extension length
+	 * 3. Option
+	 */
     int items = 3, tmp, len = 0;
 
     while (items--) {
@@ -231,6 +339,11 @@ char* ipv6_destination_hdr_writer(FILE *fp, char *cp_cur) {
             pkt->ext_len = (uint8_t)tmp;
         }
         else if (!strcmp(option, "DH_OPTION")) {
+			/**
+			 * [RFC-2460]
+			 * The only destination options defined in this document are
+			 * the Pad1 and PadN
+			 */
             len = option_writer(&pkt->data, value);
             if (len < 0)
                 goto err;
@@ -241,16 +354,39 @@ char* ipv6_destination_hdr_writer(FILE *fp, char *cp_cur) {
     return (cp_cur + len + 2);
 
 err:
+	PGEN_INFO("Error while writing IPv6 Destination Option header");
     return NULL;
 }
 
+/**
+ * @param	fp		File pointer to the configuration file
+ * @param	cp_cur	The packet buffer
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Writes IPv6 header
+ */
 char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 	struct ipv6_packet *pkt = (struct ipv6_packet *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
-	/* 
+	/** 
 	 * Totally we have 9 items in IPv6 header.
-	 * 8 items for packet.
-	 * 1 is the number of extention headers
+	 *
+	 * items needed for packet - 8.
+	 * 1. Version [Of course It is IPv'6']
+	 * 2. Traffic class
+	 * 3. Flow label
+	 * 4. Payload length
+	 * 5. Next header
+	 * 6. Hop limit
+	 * 7. Source IPv6 address
+	 * 8. Destination IPv6 address
+	 *
+	 * And one for the program
+	 * 1. Number of extension headers that follows IPv6 header
 	 */
 	int hdr_items = 9, tmp, ext_hdrs;
 
@@ -261,6 +397,10 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "IPV6_VERSION")) {
+			/**
+			 * [RFC-2460]
+			 * 4-bit Internet Protocol version number = 6.
+			 */
 			if (pgen_store_dec(&tmp, value))
 				goto err;
 			pkt->ver_tc_fw |= tmp << 28;
@@ -299,6 +439,7 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 				goto err;
 		}
 		else if (!strcmp(option, "IPV6_EXT_HDRS")) {
+			/* Number of extension headers that follows IPv6 header */
 			if (pgen_store_dec(&ext_hdrs, value))
 				goto err;
 		}
@@ -313,6 +454,14 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 		if (pgen_parse_option(fp, option, value))
 			goto err;
 
+		/**
+		 * Five known extension headers [RFC-2460]
+		 * 1. Hop-by-Hop option header
+		 * 2. Routing header
+		 * 3. Fragment header
+		 * 4. Destination option header
+		 * 5. No next header
+		 */
 		if (!strcmp(option, "HOP_BY_HOP")) {
 			cp_cur = ipv6_hbh_writer(fp, cp_cur);
 		}
@@ -325,37 +474,17 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 		else if (!strcmp(option, "DESTINATION_HEADER")) {
 			cp_cur = ipv6_destination_hdr_writer(fp, cp_cur);
 		}
+		/* No next header needs nothing other than next header value of 59 */
 		else
 			goto err;
 
 		if (cp_cur == NULL)
 			goto err;
 	}
-#if 0
-	pkt->ver_tc_fw |= sp_pd->ipv6_version << 28;
-	pkt->ver_tc_fw |= sp_pd->ipv6_traffic_class << 20;
-	pkt->ver_tc_fw |= sp_pd->ipv6_flow_label;
-
-	pkt->ver_tc_fw = htonl(pkt->ver_tc_fw);
-	pkt->payload_length = htons(sp_pd->ipv6_payload_length);
-	pkt->next_header = (uint8_t)sp_pd->ipv6_next_header;
-	pkt->hop_limit = (uint8_t)sp_pd->ipv6_hop_limit;
-
-	if (ip6_writer(pkt->src, sp_pd->ipv6_src)) {
-		fprintf(stderr, "IPV6: src_ip conversion failed\n");
-		goto err;
-	}
-
-	if (ip6_writer(pkt->dst, sp_pd->ipv6_dst)) {
-		fprintf(stderr, "IPV6: dst_ip conversion failed\n");
-		goto err;
-	}
-#endif
 
 	return cp_cur;
 
 err:
-	PGEN_INFO("Unknown IPv6 Option");
-	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
+	PGEN_INFO("Error while writing IPv6 header/its extension header");
 	return NULL;
 }
