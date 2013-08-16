@@ -1,3 +1,35 @@
-pgen - packet generation tool
+1. Introduction
+	pgen is a packet generator tool. Useful for creating various kinds
+network packets based on a user passed configuration file. pgen builds packet
+from ether-header itself and it uses a RAW socket to send the packet. So you
+need to posses root priviledge to use pgen.
 
-License is GNU-GPLv3
+	pgen is a stand-alone binary. As of now it doesn't depend on any library
+other than glibc. And in future also we will work harder to achieve this.
+
+	pgen is released under GNU-GPLv3 license. You are free to access, edit,
+modify, re-distribute the code without any prior permission from the author.
+But anyway kindly inform the author if you do so.
+
+2. How to Use
+	Run make to create the binary. And without installing simply use the binary
+
+	# make
+
+	The user generated configuration file, which contains the data using which
+pgen should construct packet will be given to pgen as a command-line argument.
+Or if the user didn't give any configuration file through command-line, pgen
+will try to use /etc/pgen.conf file by default.
+
+	# ./pgen conf
+
+	Read conf.help file to know more about configuration file.
+
+3. About me
+	I'm a network engineer for past two years. I developed this tool, because
+I need it personally.
+
+	You could mail me at "kumaran.4353@gmail.com". I'm happy to hear you.
+
+	I need contributors for this program. Till now I am the only developer
+of this project. But I believe, this will change soon.
