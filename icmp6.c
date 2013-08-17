@@ -471,7 +471,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 				else if (!strcmp(value, "NDISC_RA_MTU")) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
-					if (!strcmp(option, "NDISC_RA_TYPE")) {
+					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
 						if (pgen_store_dec(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
@@ -482,7 +482,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 
 					if (pgen_parse_option(fp, option, value))
 						goto err;
-					if (!strcmp(option, "NDISC_RA_LEN")) {
+					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
 						if (pgen_store_dec(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
@@ -526,6 +526,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 
 err:
 	PGEN_INFO("Error while writing ND-RA packet");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	return NULL;
 }
 

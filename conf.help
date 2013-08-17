@@ -1,44 +1,319 @@
 						***** Common *****
-BUFF_SIZE
-1. With 6B MAC and 4B IP size is 42B
+1. BUFF_SIZE
+	Size of the packet buffer. Any decimal number in the range of an 32-bit
+interger. Memory will be allocated for the given size and data will be written
+in that.
+
+	pgen doesn't do any validity check whether the packet buffer is sufficient
+to write the data. So the user has to be more clever while choosing size. And
+if extra non-used bytes are there in the packet buffer after writing data, pgen
+will cut them before sending the packet in wire.
+
+2. IF_NAME
+	Name of the network interface through which the packet will be sent. pgen
+will verify whether the interface is present and UP. If the interface is not
+connected to outside network, pgen will show success but the packet will not
+be sent. 
+
+3. PK_DST_MAC
+	The mac address of the destination node. Should be given regular ':'
+seperated form
 
 					***** Ethernet Header *****
-ETHR_TYPE
-#define ETHERTYPE_PUP       0x0200      /* Xerox PUP */
-#define ETHERTYPE_SPRITE    0x0500      /* Sprite */
-#define ETHERTYPE_IP        0x0800      /* IP */
-#define ETHERTYPE_ARP       0x0806      /* Address resolution */
-#define ETHERTYPE_REVARP    0x8035      /* Reverse ARP */
-#define ETHERTYPE_AT        0x809B      /* AppleTalk protocol */
-#define ETHERTYPE_AARP      0x80F3      /* AppleTalk ARP */
-#define ETHERTYPE_VLAN      0x8100      /* IEEE 802.1Q VLAN tagging */
-#define ETHERTYPE_IPX       0x8137      /* IPX */
-#define ETHERTYPE_IPV6      0x86dd      /* IP protocol version 6 */
-#define ETHERTYPE_LOOPBACK  0x9000      /* used to test interfaces */
+1. ETHER_HEADER
+	Start of ether header. pgen will start processing the options following
+this as part of ether-header options.
+
+2. DST_MAC
+	The mac address that will be filled at the ether-header's Destination mac
+field. Mac address should be in regular ':' seperated form.
+
+3. SRC_MAC
+	The mac address that will be filled at the ether-header's Source mac field.
+Mac address should be in ':' seperated form.
+
+4. ETHR_TYPE
+	The type of the packet that follows ether-header. Any decimal integer
+value.
+		ARP			2054
+		IPV6		34525
 
 						***** ARP Header *****
-ARP_HW_TYPE
-#define ARPHRD_NETROM   0       /* From KA9Q: NET/ROM pseudo. */
-#define ARPHRD_ETHER    1       /* Ethernet 10/100Mbps.  */
-#define ARPHRD_EETHER   2       /* Experimental Ethernet.  */
-#define ARPHRD_AX25 3       /* AX.25 Level 2.  */
-#define ARPHRD_PRONET   4       /* PROnet token ring.  */
-#define ARPHRD_CHAOS    5       /* Chaosnet.  */
-#define ARPHRD_IEEE802  6       /* IEEE 802.2 Ethernet/TR/TB.  */
-#define ARPHRD_ARCNET   7       /* ARCnet.  */
-#define ARPHRD_APPLETLK 8       /* APPLEtalk.  */
-#define ARPHRD_DLCI 15      /* Frame Relay DLCI.  */
-#define ARPHRD_ATM  19      /* ATM.  */
-#define ARPHRD_METRICOM 23      /* Metricom STRIP (new IANA id).  */
-#define ARPHRD_IEEE1394 24      /* IEEE 1394 IPv4 - RFC 2734.  */
-#define ARPHRD_EUI64        27      /* EUI-64.  */
-#define ARPHRD_INFINIBAND   32      /* InfiniBand.  */
+1. ARP
+	Starting of ARP packet.
 
-ARP_OPCODE
-#define ARPOP_REQUEST   1       /* ARP request.  */
-#define ARPOP_REPLY 2       /* ARP reply.  */
-#define ARPOP_RREQUEST  3       /* RARP request.  */
-#define ARPOP_RREPLY    4       /* RARP reply.  */
-#define ARPOP_InREQUEST 8       /* InARP request.  */
-#define ARPOP_InREPLY   9       /* InARP reply.  */
-#define ARPOP_NAK   10      /* (ATM)ARP NAK.  */
+2. ARP_HW_TYPE
+	Type of the network interface hardware.
+		ETHERNET	1
+
+3. ARP_HW_LEN
+	Hardware address length. For ethernet interface, the hardware address is
+mac address of the interface. It is 6 bytes long
+		ETHERNET	6
+
+4. ARP_PROTO_TYPE
+	L3 protocol type. Mostly IPv4.
+		IPv4		2048
+
+5. ARP_PROTO_LEN
+	Length of L3 protocol address. For IPv4 address is 4 bytes.
+		IPv4		4
+
+6. ARP_OPCODE
+	ARP operation code.
+		REQUEST			1
+		REPLY			2
+		RARP_REQUEST	3
+		RARP_REPLY		4
+		IN_ARP_REQUEST	8
+		IN_ARP_REPLY	9
+		ARP_NAK			10
+
+7. ARP_SRC_MAC
+	Mac address that will be filled at Source Hardware Address field of the
+ARP packet.
+
+8. ARP_SRC_IP
+	IP protocol address that will be filled at Source Protocol Address field
+of the ARP packet.
+
+9. ARP_DST_MAC
+	Mac address that will be filled at Destination Hardware Address field of
+the ARP packet.
+
+10. ARP_DST_IP
+	IP address that will be filled at Destination Protocol Address field of
+the ARP packet.
+
+                                  ***** IPv6 *****
+1. IPV6
+	IPv6 packet information starts here.
+
+2. IPV6_VERSION
+	Version of the IP protocol. A 4-bit entity. Of course the value is 6 for
+IPv6 protocol.
+		IPv6		6
+
+3. IPV6_TRAFFIC_CLASS
+	The traffic class for the packet. An 8-bit entity. The value ranges from
+0 to 255
+
+4. IPV5_FLOW_LABEL
+	Flow label for the IPv6 packet. A 20-bit entity.
+
+5. IPV6_PAYLOAD_LENGTH
+	The payload length in bytes of the IPv6 packet. Receiver must process only
+till this length of any received IPv6 packet. The bits after this length must
+be ignored. So the user must be careful while entering payload length. It is a
+16-bit long.
+
+6. IPV6_NEXT_HEADER
+	The next header value that follows the IPv6 header.
+		Hop-by-Hop			0
+		Destination-option	60
+		Routing				43
+		Fragment			44
+
+		ICMPv6				58
+
+7. IPV6_HOP_LIMIT
+	The hop limit value of the IPv6 packet. 8-bit long entity accepts any
+decimal value in range
+
+8. IPV6_SRC_ADDR
+	IPv6 source address that will be placed in the IPv6 packet's Source Address
+field. IPv6 address short forms are accepted.
+
+9. IPV6_DST_ADDR
+	IPv6 Destination address. As source address, it also accepts short form of
+IPv6 address.
+
+10. IPV6_EXT_HDRS
+	Number of IPv6 extension headers that follows the IPv6 header. This is for
+control of pgen. It won't placed in the packet. pgen will expect exactly that
+many IPv6 extension headers.
+
+                      ***** IPv6 Extension Headers *****
+Hop-by-Hop option header-------------------------------------------------------
+1. HOP_BY_HOP
+	Start of Hop-by-Hop option header
+
+2. HBH_NXT_HDR
+	The next header that follows this Hop-by-Hop option header. Read
+IPV6_NEXT_HEADER for supported next header values.
+
+3. HBH_HDR_EXT_LEN
+	Header extension length of IPv6 Hop-by-Hop option header. 1-bit entity.
+This must be the length of HBH extension header devide by 8 minus 1.
+	ext_len = (len(hbh_hdr) * 8) - 1
+
+4. HBH_OPTION
+	The Hop-by-Hop option. As of now pgen not recognises these options. So it
+expects the user to give RAW option in hex code with 0x/0X prefix.
+	e.g: HBH_OPTION=0x00010B0000000000000000000000
+	For one Pad1 byte and 13 PadN bytes.
+-------------------------------------------------------------------------------
+
+Destination Option Header------------------------------------------------------
+1. DESTINATION_HEADER
+	Start of the Destination Option Header
+
+2. DH_NXT_HDR
+	Next header value that follows this Destination Option Header. Read
+IPV6_NEXT_HEADER for supported next header values.
+
+3. DH_HDR_EXT_LEN
+	Length of the Destination Option Header.
+	ext_len = (len(dh_hdr) * 8) - 1
+
+4. DH_OPTION
+	The Destination option. As of now pgen not recognises any of these options.
+So it expects the user to give RAW option in hex code with 0x/0X prefix.
+	e.g: DH_OPTION=0x00010B0000000000000000000000
+	For one Pad1 byte and 13 PadN bytes.
+-------------------------------------------------------------------------------
+
+Routing Header-----------------------------------------------------------------
+1. ROUTING_HEADER
+	The Routing Header starts here
+
+2. RH_NXT_HDR
+	The next header value that follows this Routing Header. Read
+IPV6_NEXT_HEADER for supported next header values.
+
+3. RH_EXT_LEN
+	Lenth of Routing Extension Header. Calculate with following formula
+	ext_len = ((len(rh) * 8) - 1
+
+4. RH_TYPE
+	Routing Header Type. An 8-bit entity. As of now only type-0 routing header
+is supported by pgen. But unfortunately type-0 routing header is deprecated.
+
+5. RH_SEG_LEFT
+	Number of Routing Header segments left. It is an 8-bit long field.
+
+6. RH_DATA
+	Start of Routing Header data implies the segments.
+
+7. RH_ADDR
+	Routing header segments. One for each line. Use as many of this option as
+as you gave in RH_SEG_LEFT.
+-------------------------------------------------------------------------------
+
+IPv6 Fragment Header-----------------------------------------------------------
+1. FRAGMENT_HEADER
+	Start of IPv6 Fragment Header
+
+2. FH_NXT_HDR
+	The next header value that follows this Fragment Header. Read
+IPV6_NEXT_HDEADER for supported next header values.
+
+3. FH_OFFSET
+	Offset of the current fragment. A 13-bit field.
+
+4. FH_M_FLAG
+	The M-flag of IPv6 fragment header. 1-bit entity. If set it means that
+fragments follows. Otherwise no more fragments after this fragment.
+
+5. FH_IDENTIFICATION
+	Packet identification value. Generated by source node used for packet
+re-assembly.
+-------------------------------------------------------------------------------
+
+                               ***** ICMPv6 *****
+	This first four options specifies the ICMPv6 packet header. Whatever the
+packet type is, this header format will remain same. So pgen seperates the
+ICMPv6 header and packet.
+
+1. ICMP6
+	Start of ICMPv6 packet.
+
+2. ICMP6_TYPE
+	Type of ICMPv6 message. pgen supported types are,
+		ECHO6_REQUEST			128
+		ECHO6_REPLY				129
+		ROUTER_SOLICITATION		133
+		ROUTER_ADVERTISEMENT	134
+		NEIGHBOR_SOLICITATION	135
+		NEIGHBOR_ADVERTISEMENT	136
+
+3. ICMP6_CODE
+	ICMP6 message code. Provides additional level of message granularity.
+
+4. ICMP6_CHECKSUM
+	Checksum value of the ICMPv6 message. pgen provides an option to user to
+give his own checksum. Or if user provides -1, pgen will calculate checksum
+by itself for the ICMPv6 pcaket.
+
+Router Advertisement-----------------------------------------------------------
+1. NDISC_RA
+	Start of the Router Advertisement packet
+
+2. NDISC_RA_CUR_HOP_LIMIT
+	Cur-Hop-Limit that will be filled in the RA packet.
+
+3. NDISC_RA_M_FLAG
+	The M-flag of RA. 1 for set and 0 for reset.
+
+4. NDISC_RA_O_FLAG
+	The O-flag of RA. 1 for set and 0 for reset.
+
+5. NDISC_RA_ROUTER_LIFETIME
+	Router Lifetime
+
+6. NDISC_RA_REACHABLE_TIME
+	Reachable Time
+
+7. NDISC_RA_RETRANS_TIMER
+	Retrans timer
+
+8. NDISC_RA_OPTION_NUM
+	Number of RA options that included in this RA packet
+
+9. NDISC_RA_OPTION
+	Here the RA option starts. pgen expects that the option fields should be in
+order. pgen will through erro if the order changes. pgen supported RA options
+are,
+		NDISC_RA_PREFIX_INFO
+		NDISC_RA_SRC_LINK_ADDR
+		NDISC_RA_MTU
+
+--- Common RA option fields ---
+10. NDISC_RA_OP_TYPE
+	Type of RA option. pgen supports following types,
+		NDISC_RA_PREFIX_INFO		3
+		NDISC_RA_SRC_LINK_ADDR		1
+		NDISC_RA_MTU				5
+
+11. NDISC_RA_OP_LEN
+	Length of the RA option in 8-octets unit.
+
+--- For RA Prefix option ---
+12. NDISC_RA_PREFIX_LEN
+	Prefix Length
+
+13. NDISC_RA_L_FLAG
+	L flag. 1 for set and 0 for reset
+
+14. NDISC_RA_A_FLAG
+	A flag. 1 for set and 0 for reset
+
+15. NDISC_RA_PREFIX_VALID_LIFETIME
+	Valid lifetime for the prefix
+
+16. NDISC_RA_PREFIX_PREFERRED_LIFETIME
+	Preferred lifetime for the prefix
+
+17. NDISC_RA_PREFIX
+	The prefix itself. As of now, pgen not accepts short for of prefix. The
+user has to give full prefix value.
+
+--- For Source Link Layer Address option ---
+18. NDISC_RA_OP_SRC_LINK_ADDR
+	The Source Link Layer Address. As of now the MAC address of the underlying
+hardware.
+
+--- For MTU option ---
+19. NDISC_RA_MTU
+	The MTU value.
+-------------------------------------------------------------------------------

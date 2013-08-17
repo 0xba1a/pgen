@@ -431,7 +431,7 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 		else if (!strcmp(option, "IPV6_FLOW_LABEL")) {
 			if (pgen_store_dec(&tmp, value))
 				goto err;
-			pkt->ver_tc_fw |= tmp;
+			pkt->ver_tc_fw |= (tmp & 0xfffff);
 		}
 		else if (!strcmp(option, "IPV6_PAYLOAD_LENGTH")) {
 			if (pgen_store_dec(&tmp, value))

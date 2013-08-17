@@ -1,2 +1,4 @@
  * Read about NDisc options form update RFCs and attach.
  * Have one more look at IPv6 extension headers
+ * Add support for type-1, type-2 routing headers
+ * Add support for short form of IPv6 prefix in RA prefix option
