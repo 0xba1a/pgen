@@ -562,6 +562,7 @@ char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
 
 		/* Source Link Layer address and the only known option */
 		else if (!strcmp(value, "NDISC_RS_SRC_LINK_ADDR")) {
+			op = (char *)&(pkt->option);
 			if (pgen_parse_option(fp, option, value))
 				goto err;
 			if (!strcmp(option, "NDISC_RS_OP_TYPE")) {
@@ -757,6 +758,7 @@ char* pgen_ndisc_na_writer(FILE *fp, char *cp_cur) {
 
 			/* This is only known option as of now. [RFC-4861] */
 			else if (!strcmp(value, "NDISC_NA_SRC_LINK_ADDR")) {
+				op_ptr = (char *)&(pkt->option);
 
 				if (pgen_parse_option(fp, option, value))
 					goto err;
@@ -866,9 +868,7 @@ char* pgen_icmp6_writer(FILE *fp, char *cp_cur) {
 
 	if (!strcmp(option, "NO_ICMP6_BODY"));
 		/* we are fine here. Do nothing */
-	else if (!strcmp(option, "ECHO_REQ"))
-		cp_cur = pgen_echo6_writer(fp, cp_cur);
-	else if (!strcmp(option, "ECHO_REP"))
+	else if (!strcmp(option, "ECHO6"))
 		cp_cur = pgen_echo6_writer(fp, cp_cur);
 	else if (!strcmp(option, "NDISC_NS"))
 		cp_cur = pgen_ndisc_ns_writer(fp, cp_cur);

@@ -1,3 +1,8 @@
+	This is help file for the pgen configuration file. It gives a minimal
+information about all possible options. pgen expects the user to give options
+in the same order that appears in a packet. Also some sample conf files have
+been given in sample_confs directory.
+
 						***** Common *****
 1. BUFF_SIZE
 	Size of the packet buffer. Any decimal number in the range of an 32-bit
@@ -283,6 +288,7 @@ are,
 	Type of RA option. pgen supports following types,
 		NDISC_RA_PREFIX_INFO		3
 		NDISC_RA_SRC_LINK_ADDR		1
+		NDISC_RA_TAR_LINK_ADDR		1
 		NDISC_RA_MTU				5
 
 11. NDISC_RA_OP_LEN
@@ -311,9 +317,96 @@ user has to give full prefix value.
 --- For Source Link Layer Address option ---
 18. NDISC_RA_OP_SRC_LINK_ADDR
 	The Source Link Layer Address. As of now the MAC address of the underlying
-hardware.
+hardware. For Target Link Layer Address option, use NDISC_RA_TYPE value 2.
 
 --- For MTU option ---
 19. NDISC_RA_MTU
 	The MTU value.
+-------------------------------------------------------------------------------
+
+Router Solicitation------------------------------------------------------------
+1. NDISC_RS
+	Starting of Router Solicitation message
+
+2. NDISC_RS_OPTION
+	The Router Solicitaion option. pgen supports followint RS options
+		NDISC_RS_SRC_LINK_ADDR
+
+3. NDISC_RS_OP_TYPE
+	Option type for the RS option. For Target Source Link Layer address option
+use NDISC_RS_OP_TYPE as 2
+
+4. NDISC_RS_OP_LEN
+	Option length in 8-bit octet unit.
+
+5. NDISC_RS_SRC_LINK_ADDR
+	The Link Layer Address. As of now the Hardware mac address Source/Target
+-------------------------------------------------------------------------------
+
+Neighbor Advertisement---------------------------------------------------------
+1. NDISC_NA
+	NA data starts here
+
+2. NDISC_NA_R
+	NA R flag. 1 for set and 0 for reset
+
+3. NDISC_NA_S
+	NA S flag. 1 for set and 0 for reset
+
+4. NDISC_NA_O
+	NA O flag. 1 for set and 0 for reset
+
+5. NDISC_NA_TARGET_ADDR
+	The target address from which this advertisement is being sent
+
+6. NDISC_NA_OPTION
+	The NA option. pgen supports
+		NDISC_NA_SRC_LINK_ADDR
+
+7. NDISC_NA_OP_TYPE
+	Type of NA option. For Target Link Layer Address, type will be 2
+
+8. NDISC_NA_OP_LEN
+	Length of NA option in 8-octets unit
+
+9. NDISC_NA_OP_TAR_LINK_ADDR
+	The Target Link Layer Address. The Hardware MAC address.
+-------------------------------------------------------------------------------
+
+Neighbor Solicitation----------------------------------------------------------
+1. NDISC_NS
+	Neighbor Solicitaion starts here
+
+2. NDISC_NS_TARGET_ADDR
+	Target Address of NS
+
+3. NDISC_NS_OPTION
+	Neighbor Soliciation option. The only supported option is
+		NDISC_NS_SRC_LINK_ADDR
+
+3. NDISC_NS_OP_TYPE
+	Type of NS option. 1 for Source Link Layer Address option and 2 for Target
+Link Layer Address option.
+
+4. NDISC_NS_OP_LEN
+	Length of NS option in 8-octets unit
+
+5. NDISC_NS_OP_SRC_LINK_ADDR
+	Source Link Layer Address. The hardware MAC address of the sender.
+-------------------------------------------------------------------------------
+
+ICMPv6 Echo--------------------------------------------------------------------
+1. ECHO6
+	The ICMPv6 Echo packet starts here
+
+2. ECHO6_IDENTIFIER
+	Identifier of the Echo6 packet
+
+3. ECHO6_SEQ
+	Sequence of Echo6 packet
+
+4. ECHO6_DATA
+	Data for Echo6 packet.
+			NO_DATA		For no data
+	Or the user has to give the data he wants in hex.
 -------------------------------------------------------------------------------
