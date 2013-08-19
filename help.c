@@ -108,6 +108,41 @@ err:
 }
 
 /**
+ * @param	mac		The mac address that to be validated
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Checks whether the given mac address is valid.
+ */
+int validate_mac(const char *mac) {
+	int i;
+
+	if (strlen(mac) != 17)
+		goto err;
+
+	for (i = 0; i < 17; i++) {
+		if ((((mac[i] >= 'A') && (mac[i] <= 'F')) ||
+				((mac[i] >= 'a') && (mac[i] <= 'f')) ||
+				((mac[i] >= '0') && (mac[i] <= '9')))
+				&& ((i+1) % 3 != 0))
+			continue;
+		else if ((mac[i] == ':') && ((i+1)%3 == 0))
+			continue;
+		else
+			goto err;
+	}
+	return 0;
+
+err:
+	PGEN_INFO("Mac validation failed");
+	PGEN_PRINT_DATA("%s\n", mac);
+	return -1;
+}
+
+/**
  * @param	dst		Destination pointer where the resulting mac address
  *					will be stored
  * @param	src		Source character pointer in which mac address to be
@@ -125,6 +160,14 @@ int32_t mac_writer(char *dst, const char *src) {
     char ind;
     int32_t i, j = 0;
 
+	if (!dst || !src) {
+		PGEN_INFO("Arguments NULL check failed");
+		goto err;
+	}
+
+	if (validate_mac(src))
+		goto err;
+
     for (i = 0; i < 17; i++) {
         ind = src[i];
         if (ind >= '0' && ind <= '9')
@@ -137,13 +180,15 @@ int32_t mac_writer(char *dst, const char *src) {
             dst[j++] = (unsigned char) seg;
             seg = 0;
         }
-        else {
-			PGEN_INFO("mac_writer returns error");
-            return -1;
-		}
+        else
+			goto err;
     }
 	dst[j] = (unsigned char) seg;
     return 0;
+
+err:
+	PGEN_INFO("mac_writer returns error");
+	return -1;
 }
 
 /**

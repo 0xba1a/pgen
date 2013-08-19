@@ -127,7 +127,6 @@ int32_t main(int32_t argc, char **argv) {
 
 err:
 	PGEN_INFO("ERROR CASE");
-	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	fclose(fp);
 	/* free will accept NULL also */
 	free(cp_buff);
