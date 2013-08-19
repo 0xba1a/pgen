@@ -216,12 +216,12 @@ char* pgen_echo6_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "ECHO6_IDENTIFIER")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->identifier = htons(tmp);
 		}
 		else if (!strcmp(option, "ECHO6_SEQ")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->seq_num = htons(tmp);
 		}
@@ -279,39 +279,39 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "NDISC_RA_CUR_HOP_LIMIT")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->cur_hop_limit = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "NDISC_RA_M_FLAG")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			if (tmp)
 				pkt->m_o_res |= 0x80;
 		}
 		else if (!strcmp(option, "NDISC_RA_O_FLAG")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			if (tmp)
 				pkt->m_o_res |= 0x40;
 		}
 		else if (!strcmp(option, "NDISC_RA_ROUTER_LIFETIME")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->router_lifetime = htons(tmp);
 		}
 		else if (!strcmp(option, "NDISC_RA_REACHABLE_TIME")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->reachable_time = htonl(tmp);
 		}
 		else if (!strcmp(option, "NDISC_RA_RETRANS_TIMER")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->retrans_timer = htonl(tmp);
 		}
 		else if (!strcmp(option, "NDISC_RA_OPTION_NUM")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			op_num = tmp;
 		}
@@ -336,7 +336,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
 						op++;
@@ -347,7 +347,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
 						/* Option length will be 8 octets unit */
@@ -373,7 +373,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
 						op++;
@@ -384,7 +384,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
 						/* option length is in 8 octets uint */
@@ -397,7 +397,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_PREFIX_LEN")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
 						op++;
@@ -408,7 +408,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_L_FLAG")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						if (tmp)
 							*op |= 0x80;
@@ -419,7 +419,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_A_FLAG")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						if (tmp)
 							*op |= 0x40;
@@ -432,7 +432,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_PREFIX_VALID_LIFETIME")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						tmp = htonl(tmp);
 						memcpy(op, &tmp, 4);
@@ -444,7 +444,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_PREFIX_PREFERRED_LIFETIME")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						tmp = htonl(tmp);
 						memcpy(op, &tmp, 4);
@@ -472,7 +472,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
 						op++;
@@ -483,7 +483,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						*op = (uint8_t)tmp;
 						/* Option length will be in 8 octets uint */
@@ -499,7 +499,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (pgen_parse_option(fp, option, value))
 						goto err;
 					if (!strcmp(option, "NDISC_RA_MTU")) {
-						if (pgen_store_dec(&tmp, value))
+						if (pgen_store_num(&tmp, value))
 							goto err;
 						tmp = htonl(tmp);
 						memcpy(op, &tmp, 4);
@@ -566,7 +566,7 @@ char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
 			if (pgen_parse_option(fp, option, value))
 				goto err;
 			if (!strcmp(option, "NDISC_RS_OP_TYPE")) {
-				if (pgen_store_dec(&tmp, value))
+				if (pgen_store_num(&tmp, value))
 					goto err;
 				*op = (uint8_t)tmp;
 				op++;
@@ -577,7 +577,7 @@ char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
 			if (pgen_parse_option(fp, option, value))
 				goto err;
 			if (!strcmp(option, "NDISC_RS_OP_LEN")) {
-				if (pgen_store_dec(&tmp, value))
+				if (pgen_store_num(&tmp, value))
 					goto err;
 				*op = (uint8_t)tmp;
 				/* option length will be in 8 octets unit */
@@ -653,7 +653,7 @@ char* pgen_ndisc_ns_writer(FILE *fp, char *cp_cur) {
 				if (pgen_parse_option(fp, option, value))
 					goto err;
 				if (!strcmp(option, "NDISC_NS_OP_TYPE")) {
-					if (pgen_store_dec(&tmp, value))
+					if (pgen_store_num(&tmp, value))
 						goto err;
 					*op_ptr = (uint8_t)tmp;
 					op_ptr++;
@@ -664,7 +664,7 @@ char* pgen_ndisc_ns_writer(FILE *fp, char *cp_cur) {
 				if (pgen_parse_option(fp, option, value))
 					goto err;
 				if (!strcmp(option, "NDISC_NS_OP_LEN")) {
-					if (pgen_store_dec(&tmp, value))
+					if (pgen_store_num(&tmp, value))
 						goto err;
 					*op_ptr = (uint8_t)tmp;
 					op_ptr++;
@@ -730,19 +730,19 @@ char* pgen_ndisc_na_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "NDISC_NA_R")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			if (tmp)
 				pkt->RSO_res |= 0x80000000;
 		}
 		else if (!strcmp(option, "NDISC_NA_S")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			if (tmp)
 				pkt->RSO_res |= 0x40000000;
 		}
 		else if (!strcmp(option, "NDISC_NA_O")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			if (tmp)
 				pkt->RSO_res |= 0x20000000;
@@ -763,7 +763,7 @@ char* pgen_ndisc_na_writer(FILE *fp, char *cp_cur) {
 				if (pgen_parse_option(fp, option, value))
 					goto err;
 				if (!strcmp(option, "NDISC_NA_OP_TYPE")) {
-					if (pgen_store_dec(&tmp, value))
+					if (pgen_store_num(&tmp, value))
 						goto err;
 					*op_ptr = (uint8_t)tmp;
 					op_ptr++;
@@ -774,7 +774,7 @@ char* pgen_ndisc_na_writer(FILE *fp, char *cp_cur) {
 				if (pgen_parse_option(fp, option, value))
 					goto err;
 				if (!strcmp(option, "NDISC_NA_OP_LEN")) {
-					if (pgen_store_dec(&tmp, value))
+					if (pgen_store_num(&tmp, value))
 						goto err;
 					*op_ptr = (uint8_t)tmp;
 					op_ptr++;
@@ -841,18 +841,18 @@ char* pgen_icmp6_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "ICMP6_TYPE")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->type = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "ICMP6_CODE")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->code = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "ICMP6_CHECKSUM")) {
 			/* User could give his own checksum. Could try a wrong one */
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			/* If the user gives -1, program will calculate checksum */
 			if (tmp == -1)

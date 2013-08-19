@@ -61,5 +61,7 @@ int pgen_parse_option(FILE *, char *, char *);
 int send_packet(const char *, const char *, const char *, const int);
 int mac_writer(char *, const char *);
 int ip4_writer(char *, const char *);
-int pgen_store_dec(int *, const char *);
+int pgen_store_num(int *, const char *);
+int validate_mac(const char *);
+int validate_num(const char *);
 #endif /* PGEN_H */

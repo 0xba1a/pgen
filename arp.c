@@ -67,27 +67,27 @@ char* pgen_arp_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "ARP_HW_TYPE")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->hw_type = htons(tmp);
 		}
 		else if (!strcmp(option, "ARP_HW_LEN")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->hw_len = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "ARP_PROTO_TYPE")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->proto_type = htons(tmp);
 		}
 		else if (!strcmp(option, "ARP_PROTO_LEN")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->proto_len = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "ARP_OPCODE")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->op = htons(tmp);
 		}

@@ -62,7 +62,7 @@ char* pgen_ethr_hdr_writer(FILE *fp, char *cp_cur) {
 				goto err;
 		}
 		else if (!strcmp(option, "ETHR_TYPE")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->ether_type = htons(tmp);
 		}

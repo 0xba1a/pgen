@@ -54,7 +54,7 @@ int32_t main(int32_t argc, char **argv) {
 		goto err;
 	if (strcmp(option, "BUFF_SIZE"))
 		goto err;
-	if (pgen_store_dec(&buff_size, value))
+	if (pgen_store_num(&buff_size, value))
 		goto err;
 
 	/* Get interface name */

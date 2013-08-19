@@ -526,6 +526,58 @@ err:
 }
 
 /**
+ * @param	num_orig	String that needs to be validated for number
+ *
+ * @return
+ *			0			Success
+ *			-1			Error
+ *
+ * @Description
+ *		Validates whether the given string is number [hex/decimal]
+ */
+int validate_num(const char *num_orig) {
+	int i;
+	const char *num;
+
+	/* Check for negative */
+	if ((strlen(num_orig) > 1) && (num_orig[0] == '-'))
+		num = &(num_orig[1]);
+	else
+		num = num_orig;
+
+	/* if hex */
+	if ((strlen(num) > 2) && (num[0] == '0') &&
+		   ((num[1] == 'x') || (num[1] == 'X'))) {
+		for (i = 2; i < strlen(num); i++) {
+			if (((num[i] >= '0') && (num[i] <= '9')) ||
+					((num[i] >= 'a') && (num[i] <= 'f')) ||
+					((num[i] >= 'A') && (num[i] <= 'F')))
+				continue;
+			else
+				goto err;
+		}
+	}
+
+	/* Or consider as decimal */
+	else {
+		for (i = 0; i < strlen(num); i++) {
+			if ((num[i] >= '0') && (num[i] <= '9'))
+				continue;
+			else
+				goto err;
+		}
+		if (i == 0)
+			goto err;
+	}
+	return 0;
+
+err:
+	PGEN_INFO("Number validation failed");
+	PGEN_PRINT_DATA("%s\n", num);
+	return -1;
+}
+
+/**
  * @param	i		Destination pointer where converted decimal value will
  *					be stored.
  * @param	c		Source pointer in which string form of the the number
@@ -540,12 +592,34 @@ err:
  * As it depends on strtol, this function doesn't bother about
  * rear non-number characters. It is just a wrapper over strtol
  */
-int32_t pgen_store_dec(int32_t *i, const char *c) {
-	errno = 0;
-	*i = strtol(c, NULL, 10);
-	if (errno) {
-		PGEN_INFO("Decimal conversion failed");
-		return -errno;
+int32_t pgen_store_num(int32_t *i, const char *c) {
+
+	/* Arg. NULL check */
+	if (!i || !c) {
+		PGEN_INFO("Argument NULL check failed");
+		return -1;
+	}
+
+	if (validate_num(c))
+		return -1;
+
+	/* if given in hex */
+	if ((strlen(c) > 2) && (c[0] == '0') && ((c[1] == 'x') || c[1] == 'X')) {
+		errno = 0;
+		*i = strtol(c, NULL, 16);
+		if (errno) {
+			PGEN_INFO("Conversion from hex failed");
+			return -errno;
+		}
+	}
+	/* Or consider as decimal */
+	else {
+		errno = 0;
+		*i = strtol(c, NULL, 10);
+		if (errno) {
+			PGEN_INFO("Conversion from decimal failed");
+			return -errno;
+		}
 	}
 
 	return 0;

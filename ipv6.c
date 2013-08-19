@@ -148,22 +148,22 @@ char* ipv6_fragment_hdr_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "FH_NXT_HDR")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->nxt_hdr = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "FH_OFFSET")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->fo_res_m |= (uint16_t)(tmp << 3);
 		}
 		else if (!strcmp(option, "FH_M_FLAG")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->fo_res_m |= (uint16_t)(tmp & 0x1);
 		}
 		else if (!strcmp(option, "FH_IDENTIFICATION")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->identification = htonl(tmp);
 		}
@@ -210,22 +210,22 @@ char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "RH_NXT_HDR")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->nxt_hdr = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "RH_EXT_LEN")) {
-			if (pgen_store_dec(&len, value))
+			if (pgen_store_num(&len, value))
 				goto err;
 			pkt->ext_len = (uint8_t)len;
 		}
 		else if (!strcmp(option, "RH_TYPE")) {
-			if (pgen_store_dec(&type, value))
+			if (pgen_store_num(&type, value))
 				goto err;
 			pkt->type = (uint8_t)type;
 		}
 		else if (!strcmp(option, "RH_SEG_LEFT")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->seg_left = (uint8_t)tmp;
 		}
@@ -288,12 +288,12 @@ char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 			goto err;
 
 		if (!strcmp(option, "HBH_NXT_HDR")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->nxt_hdr = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "HBH_HDR_EXT_LEN")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->ext_len = (uint8_t)tmp;
 		}
@@ -347,12 +347,12 @@ char* ipv6_destination_hdr_writer(FILE *fp, char *cp_cur) {
             goto err;
 
         if (!strcmp(option, "DH_NXT_HDR")) {
-            if (pgen_store_dec(&tmp, value))
+            if (pgen_store_num(&tmp, value))
                 goto err;
             pkt->nxt_hdr = (uint8_t)tmp;
         }
         else if (!strcmp(option, "DH_HDR_EXT_LEN")) {
-            if (pgen_store_dec(&tmp, value))
+            if (pgen_store_num(&tmp, value))
                 goto err;
             pkt->ext_len = (uint8_t)tmp;
         }
@@ -419,32 +419,32 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 			 * [RFC-2460]
 			 * 4-bit Internet Protocol version number = 6.
 			 */
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->ver_tc_fw |= tmp << 28;
 		}
 		else if (!strcmp(option, "IPV6_TRAFFIC_CLASS")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->ver_tc_fw |= tmp << 20;
 		}
 		else if (!strcmp(option, "IPV6_FLOW_LABEL")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->ver_tc_fw |= (tmp & 0xfffff);
 		}
 		else if (!strcmp(option, "IPV6_PAYLOAD_LENGTH")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->payload_length = htons(tmp);
 		}
 		else if (!strcmp(option, "IPV6_NEXT_HEADER")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->next_header = (uint8_t)tmp;
 		}
 		else if (!strcmp(option, "IPV6_HOP_LIMIT")) {
-			if (pgen_store_dec(&tmp, value))
+			if (pgen_store_num(&tmp, value))
 				goto err;
 			pkt->hop_limit = (uint8_t)tmp;
 		}
@@ -458,7 +458,7 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 		}
 		else if (!strcmp(option, "IPV6_EXT_HDRS")) {
 			/* Number of extension headers that follows IPv6 header */
-			if (pgen_store_dec(&ext_hdrs, value))
+			if (pgen_store_num(&ext_hdrs, value))
 				goto err;
 		}
 		else

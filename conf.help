@@ -5,7 +5,7 @@ been given in sample_confs directory.
 
 						***** Common *****
 1. BUFF_SIZE
-	Size of the packet buffer. Any decimal number in the range of an 32-bit
+	Size of the packet buffer. Any decimal/hex number in the range of an 32-bit
 interger. Memory will be allocated for the given size and data will be written
 in that.
 
@@ -38,7 +38,7 @@ field. Mac address should be in regular ':' seperated form.
 Mac address should be in ':' seperated form.
 
 4. ETHR_TYPE
-	The type of the packet that follows ether-header. Any decimal integer
+	The type of the packet that follows ether-header. Any decimal/hex integer
 value.
 		ARP			2054
 		IPV6		34525
@@ -123,7 +123,7 @@ be ignored. So the user must be careful while entering payload length. It is a
 
 7. IPV6_HOP_LIMIT
 	The hop limit value of the IPv6 packet. 8-bit long entity accepts any
-decimal value in range
+decimal/hex value in range
 
 8. IPV6_SRC_ADDR
 	IPv6 source address that will be placed in the IPv6 packet's Source Address
