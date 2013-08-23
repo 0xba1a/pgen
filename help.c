@@ -253,8 +253,15 @@ int32_t ip4_writer(char *dst, const char *src) {
  */
 int32_t ip6_writer(char *dst, const char *src) {
 
+	/* NULL check */
+	if (!dst || !src) {
+		PGEN_INFO("NULL check failed\n");
+		return -1;
+	}
+
 	if (inet_pton(AF_INET6, src, dst) == 0) {
 		PGEN_INFO("Invalid IPv6 address");
+		PGEN_PRINT_DATA("%s\n", src);
 		return -1;
 	}
 	return 0;
