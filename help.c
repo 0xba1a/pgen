@@ -695,3 +695,39 @@ err:
     close(sockfd);
     return -1;
 }
+
+char* encode_name(char *op, const char *name) {
+	int len = 0, i, pad;
+
+	/* NULL check */
+	if (!op || !name)
+		goto err;
+
+	len = strlen(name);
+	if (len == 0)
+		goto err;
+	else {
+		*op = len;
+		op++;
+	}
+
+	for (i = 0; i < len; i++) {
+		*op = name[i];
+		op++;
+	}
+
+	/* terminate byte */
+	op++;
+
+	/* pad to 8 octet multiple */
+	pad = 8 - ((len+2) % 8);
+	op += pad;
+
+	return op;
+
+err:
+	PGEN_INFO("Error while encoding name");
+	PGEN_PRINT_DATA("%s\n", name);
+	return NULL;
+
+}

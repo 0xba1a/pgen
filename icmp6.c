@@ -560,6 +560,58 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					else
 						goto err;
 				}
+
+				/* DNS Search List Option. RFC-6106 */
+				else if (!strcmp(value, "NDISC_RA_DNSSL")) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
+						if (pgen_store_num(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						op++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
+						if (pgen_store_num(&tmp, value))
+							goto err;
+						*op = (uint8_t)tmp;
+						/* option length in 8-octet unit */
+						op_len += tmp * 8;
+						op++;
+					}
+					else
+						goto err;
+
+					/* 2-Bytes reserved */
+					op += 2;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_LIFETIME")) {
+						if (pgen_store_num(&tmp, value))
+							goto err;
+						tmp = htonl(tmp);
+						memcpy(op, &tmp, 4);
+						op += 4;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_RA_OP_NAME")) {
+						op = encode_name(op, value);
+						if (!op)
+							goto err;
+					}
+					else
+						goto err;
+				}
 				else
 					goto err;
 
