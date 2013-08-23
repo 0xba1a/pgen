@@ -696,8 +696,8 @@ err:
     return -1;
 }
 
-char* encode_name(char *op, const char *name) {
-	int len = 0, i, pad;
+int encode_name(char *op, const char *name) {
+	int len = 0, i;
 
 	/* NULL check */
 	if (!op || !name)
@@ -719,15 +719,11 @@ char* encode_name(char *op, const char *name) {
 	/* terminate byte */
 	op++;
 
-	/* pad to 8 octet multiple */
-	pad = 8 - ((len+2) % 8);
-	op += pad;
-
-	return op;
+	return (len + 2);
 
 err:
 	PGEN_INFO("Error while encoding name");
 	PGEN_PRINT_DATA("%s\n", name);
-	return NULL;
+	return -1;
 
 }

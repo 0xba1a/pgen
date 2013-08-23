@@ -64,5 +64,5 @@ int ip4_writer(char *, const char *);
 int pgen_store_num(int *, const char *);
 int validate_mac(const char *);
 int validate_num(const char *);
-char* encode_name(char *, const char *);
+int encode_name(char *, const char *);
 #endif /* PGEN_H */

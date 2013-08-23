@@ -273,6 +273,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 	 */
 	int32_t items = 8, tmp, op_len = 0, op_num;
 	char *op;
+	int32_t count, len, ret;
 
 	while (items--) {
 		if (pgen_parse_option(fp, option, value))
@@ -531,6 +532,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 						/* option len will be in 8 octets unit */
 						op_len += tmp * 8;
 						op++;
+						count = (tmp - 1) / 2;
 					}
 					else
 						goto err;
@@ -550,15 +552,17 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					else
 						goto err;
 
-					if (pgen_parse_option(fp, option, value))
-						goto err;
-					if (!strcmp(option, "NDISC_RA_OP_DNS_ADDR")) {
-						if (ip6_writer(op, value))
+					while (count--) {
+						if (pgen_parse_option(fp, option, value))
 							goto err;
-						op += 16;
+						if (!strcmp(option, "NDISC_RA_OP_DNS_ADDR")) {
+							if (ip6_writer(op, value))
+								goto err;
+							op += 16;
+						}
+						else
+							goto err;
 					}
-					else
-						goto err;
 				}
 
 				/* DNS Search List Option. RFC-6106 */
@@ -604,13 +608,30 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 
 					if (pgen_parse_option(fp, option, value))
 						goto err;
-					if (!strcmp(option, "NDISC_RA_OP_NAME")) {
-						op = encode_name(op, value);
-						if (!op)
+					if (!strcmp(option, "NDISC_RA_OP_NUM")) {
+						if (pgen_store_num(&count, value))
 							goto err;
 					}
 					else
 						goto err;
+
+					len = 0;
+					while(count--) {
+						if (pgen_parse_option(fp, option, value))
+							goto err;
+						if (!strcmp(option, "NDISC_RA_OP_NAME")) {
+							ret = encode_name(op, value);
+							if (ret < 0)
+								goto err;
+							len += ret;
+							op += len;
+						}
+						else
+							goto err;
+					}
+
+					/* pad to 8-octet multiple */
+					op += (8 - (len % 8));
 				}
 				else
 					goto err;
