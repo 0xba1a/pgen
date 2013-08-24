@@ -696,28 +696,39 @@ err:
     return -1;
 }
 
-int encode_name(char *op, const char *name) {
+/**
+ * @param	op		place holder where the option will be writter
+ * @param	name	The name which will be encoded and added to option
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Encodes the given name as described in RFC-1035 Sec-3.1
+ */
+int encode_name(char *buff, const char *name) {
 	int len = 0, i;
 
 	/* NULL check */
-	if (!op || !name)
+	if (!buff || !name)
 		goto err;
 
 	len = strlen(name);
 	if (len == 0)
 		goto err;
 	else {
-		*op = len;
-		op++;
+		*buff = len;
+		buff++;
 	}
 
 	for (i = 0; i < len; i++) {
-		*op = name[i];
-		op++;
+		*buff = name[i];
+		buff++;
 	}
 
 	/* terminate byte */
-	op++;
+	buff++;
 
 	return (len + 2);
 
@@ -726,4 +737,137 @@ err:
 	PGEN_PRINT_DATA("%s\n", name);
 	return -1;
 
+}
+
+/**
+ * @param	buff	option place holder where the option will be written
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Writes PAD1 option in given place.
+ */
+int pad1(char* buff) {
+
+	/* NULL check */
+	if (!buff)
+		return -1;
+
+	return 0;
+}
+
+/**
+ * @param	fp		file pointer to the configuration file
+ * @param	buff	place holder where the option will be written
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Writes padN option at op.
+ */
+int padN(FILE *fp, char *buff) {
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	/* the N in pad'N' */
+	int32_t n;
+
+	/* NULL check */
+	if (!buff)
+		goto err;
+
+	if (pgen_parse_option(fp, option, value))
+		goto err;
+
+	if (strcmp(option, "PADN_N"))
+		goto err;
+
+	if (pgen_store_num(&n, value))
+		goto err;
+
+	/* option len is an 1-Byte entity */
+	if ((n < 2) || (n > 255))
+		goto err;
+	n = n - 2;
+
+	/* initial 'one' byte */
+	*buff = (uint8_t)1;
+	buff++;
+
+	/* len */
+	*buff = (uint8_t)n;
+	buff++;
+
+	/* pad with zeros */
+
+	return n + 2;
+
+err:
+	PGEN_INFO("Error while writing PadN option");
+	PGEN_PRINT_DATA("%s\t%s\n", option, value);
+	return -1;
+}
+
+/**
+ * @param	fp		File pointer to the configuration file
+ * @param	buff	buffer where the data will be written
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		Dumps hex string into buff.
+ */
+int raw_data_writer(FILE *fp, char *buff) {
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN], val;
+	uint8_t byte = 0;
+    uint32_t i;
+
+    /* NULL check */
+    if (!buff)
+        goto err;
+
+	if (pgen_parse_option(fp, option, value))
+		goto err;
+	if (strcmp(option, "RAW_DATA"))
+		goto err;
+
+    /* expects user to use 0x/0X prefix for the hex option value */
+    if ((value[0] != '0') && (value[1] != 'x' || value[1] != 'X'))
+        goto err;
+
+    /* Read a nibble at a time and write a byte */
+	i = 2;
+    while (value[i] != '\0') {
+		val = value[i];
+        if (val >= '0' && val <= '9')
+            byte = byte * 16 + val - '0';
+        else if (val >= 'a' && val <= 'f')
+            byte = byte * 16 + val - 'a' + 10;
+        else if (val >= 'A' && val <= 'F')
+            byte = byte * 16 + val - 'A' + 10;
+        else
+            goto err;
+
+        if (i % 2 != 0) {
+            *buff++ = byte;
+            byte = 0;
+        }
+		i++;
+    }
+    
+	/* length of the hex value must be in even */
+    if (i % 2 != 0)
+        goto err;
+    else
+        /* Return length of option */
+        return (i/2 - 1);
+
+err:
+	PGEN_INFO("Error while writing RAW data");
+	PGEN_PRINT_DATA("%s\t%s\n", option, value);
+    return -1;
 }

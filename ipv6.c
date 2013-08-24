@@ -280,8 +280,11 @@ char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 	 * 1. Next header
 	 * 2. Header extension length
 	 * 3. Options
+	 *
+	 * 4. Number of options
 	 */
-	int items = 3, tmp, len = 0;
+	int32_t items = 4, tmp, len = 0, op_num;
+	char *op;
 
 	while (items--) {
 		if (pgen_parse_option(fp, option, value))
@@ -297,15 +300,58 @@ char* ipv6_hbh_writer(FILE *fp, char *cp_cur) {
 				goto err;
 			pkt->ext_len = (uint8_t)tmp;
 		}
+		else if (!strcmp(option, "HBH_OPTION_NUM")) {
+			if (pgen_store_num(&op_num, value))
+				goto err;
+		}
 		else if (!strcmp(option, "HBH_OPTION")) {
+			len = 0;
+			op = &pkt->data;
 			/**
 			 * [RFC-2460]
 			 * The only hop-by-hop options defined in this document are the
 			 * Pad1 and PadN
 			 */
+			while (op_num--) {
+				/* Pad-1 */
+				if (!strcmp(value, "PAD1")) {
+					if (pad1(op))
+						goto err;
+					op += 1;
+					len += 1;
+				}
+				/* Pad-N */
+				else if (!strcmp(value, "PADN")) {
+					tmp = padN(fp, op);
+					if (tmp < 1)
+						goto err;
+					op += tmp;
+					len += tmp;
+				}
+				/* RAW option in hex */
+				else if (!strcmp(value, "RAW")) {
+					tmp = raw_data_writer(fp, op);
+					if (tmp < 0)
+						goto err;
+					op += tmp;
+					len += tmp;
+				}
+				else
+					goto err;
+
+				if (op_num) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+
+					if (strcmp(option, "HBH_OPTION"))
+						goto err;
+				}
+			}
+/*
 			len = option_writer(&pkt->data, value);
 			if (len < 0)
 				goto err;
+*/
 		}
 		else
 			goto err;
@@ -339,8 +385,11 @@ char* ipv6_destination_hdr_writer(FILE *fp, char *cp_cur) {
 	 * 1. Next header
 	 * 2. Header extension length
 	 * 3. Option
+	 *
+	 * 4. Number of options
 	 */
-    int items = 3, tmp, len = 0;
+    int32_t items = 4, tmp, len = 0, op_num;
+	char *op;
 
     while (items--) {
         if (pgen_parse_option(fp, option, value))
@@ -356,15 +405,55 @@ char* ipv6_destination_hdr_writer(FILE *fp, char *cp_cur) {
                 goto err;
             pkt->ext_len = (uint8_t)tmp;
         }
+		else if (!strcmp(option, "DH_OPTION_NUM")) {
+			if (pgen_store_num(&op_num, value))
+				goto err;
+		}
         else if (!strcmp(option, "DH_OPTION")) {
+			len = 0;
+			op = &pkt->data;
 			/**
 			 * [RFC-2460]
 			 * The only destination options defined in this document are
 			 * the Pad1 and PadN
 			 */
-            len = option_writer(&pkt->data, value);
-            if (len < 0)
-                goto err;
+
+			while (op_num--) {
+				/* Pad-1 */
+				if (!strcmp(value, "PAD1")) {
+					if (pad1(op))
+						goto err;
+					len += 1;
+					op += 1;
+				}
+				/* Pad-N */
+				else if (!strcmp(value, "PADN")) {
+					tmp = padN(fp, op);
+					if (tmp < 0)
+						goto err;
+					op += tmp;
+					len += tmp;
+				}
+				/* RAW */
+				else if (!strcmp(value, "RAW")) {
+					tmp = raw_data_writer(fp, op);
+					if (tmp < 0)
+						goto err;
+					op += tmp;
+					len += tmp;
+				}
+				/* Unknown option */
+				else
+					goto err;
+
+				if (op_num) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+
+					if (strcmp(option, "DH_OPTION"))
+						goto err;
+				}
+			}
         }
         else
             goto err;
@@ -504,5 +593,6 @@ char* pgen_ipv6_writer(FILE *fp, char *cp_cur) {
 
 err:
 	PGEN_INFO("Error while writing IPv6 header/its extension header");
+	PGEN_PRINT_DATA("%s\t%s\n", option, value);
 	return NULL;
 }

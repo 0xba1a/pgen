@@ -152,11 +152,16 @@ IPV6_NEXT_HEADER for supported next header values.
 This must be the length of HBH extension header devide by 8 minus 1.
 	ext_len = (len(hbh_hdr) * 8) - 1
 
-4. HBH_OPTION
-	The Hop-by-Hop option. As of now pgen not recognises these options. So it
-expects the user to give RAW option in hex code with 0x/0X prefix.
-	e.g: HBH_OPTION=0x00010B0000000000000000000000
-	For one Pad1 byte and 13 PadN bytes.
+4. HBH_OPTION_NUM
+	Number of options to be included.
+
+5. HBH_OPTION
+	The Hop-by-Hop option. pgen supports following options
+	* PAD1
+	* PADN
+		- PADN_N should follow PADN to specify number of bytes to be padded.
+	* RAW
+		- RAW_DATA should follow RAW indicating the hex stream of RAW data.
 -------------------------------------------------------------------------------
 
 Destination Option Header------------------------------------------------------
@@ -171,11 +176,16 @@ IPV6_NEXT_HEADER for supported next header values.
 	Length of the Destination Option Header.
 	ext_len = (len(dh_hdr) * 8) - 1
 
-4. DH_OPTION
-	The Destination option. As of now pgen not recognises any of these options.
-So it expects the user to give RAW option in hex code with 0x/0X prefix.
-	e.g: DH_OPTION=0x00010B0000000000000000000000
-	For one Pad1 byte and 13 PadN bytes.
+4. DH_OPTION_NUM
+	Number of options to be included in Destination Header.
+
+5. DH_OPTION
+	The Destination option. pgen supports following options.
+	* PAD1
+	* PADN
+		- PADN_N should follow PADN to specify number of bytes to be padded.
+	* RAW
+		- RAW_DATA should follow RAW indicating the hex stream of RAW data.
 -------------------------------------------------------------------------------
 
 Routing Header-----------------------------------------------------------------
@@ -290,6 +300,8 @@ are,
 		NDISC_RA_SRC_LINK_ADDR		1
 		NDISC_RA_TAR_LINK_ADDR		1
 		NDISC_RA_MTU				5
+		NDISC_RA_RDNSS				25
+		NDISC_RA_RDNSL				31
 
 11. NDISC_RA_OP_LEN
 	Length of the RA option in 8-octets unit.
@@ -322,6 +334,27 @@ hardware. For Target Link Layer Address option, use NDISC_RA_TYPE value 2.
 --- For MTU option ---
 19. NDISC_RA_MTU
 	The MTU value.
+
+--- For RDNSS option ---
+20. NDISC_RA_OP_LIFETIME
+	Lifetime of supplied Recursive DNS Servers in seconds.
+
+21. NDISC_RA_OP_DNS_ADDR
+	The Recursive DNS Server address. Number of RDNSS address is based on
+option length given in NDISC_RA_OP_LEN.
+		No. of RDNSS address = (option_length - 1) / 2
+
+--- For DNSSL option ---
+22. NDISC_RA_OP_LIFETIME
+	Lifetime in seconds for the DNS Server List supplied.
+
+23. NDISC_RA_OP_NUM
+	Number of DNS Servers that will be supplied by this option. Unlike RDNSS,
+number of DNSSL couldn't be calculated from the option length. Because all
+DNSSL are not same length. So user has to be clever while filling length.
+
+24. NDISC_RA_OP_NAME
+	DNSSL server name. Each DNSSL in seperate option.
 -------------------------------------------------------------------------------
 
 Router Solicitation------------------------------------------------------------

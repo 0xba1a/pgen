@@ -229,7 +229,7 @@ char* pgen_echo6_writer(FILE *fp, char *cp_cur) {
 			if (!strcmp(value, "NO_DATA"))
 				len = 0;
 			else {
-				len = option_writer(&(pkt->data), value);
+				len = raw_data_writer(fp, &(pkt->data));
 				if (len == 0)
 					goto err;
 			}
@@ -983,7 +983,7 @@ char* pgen_icmp6_writer(FILE *fp, char *cp_cur) {
 			if (tmp == -1)
 				calculate_cksum = 1;
 			else
-				pkt->checksum = (uint16_t)tmp;
+				pkt->checksum = htons(tmp);
 		}
 	}
 	cp_cur += sizeof(struct icmp6_hdr);

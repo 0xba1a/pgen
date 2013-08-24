@@ -8,4 +8,4 @@
 
 Bugs:
  * ICMPv6 checksum manual entry should be converted to network byte stream
-   before added to packet.
+   before added to packet. [24-08-2013]

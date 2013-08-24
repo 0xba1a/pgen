@@ -1,0 +1,5 @@
+ * RDNSS option for RA added
+ * DNSSL option for RA added
+ * Support for IPv6 options PAD1 and PAD2 added
+ * ICMPv6 manual checksum bug fixed
+pgen-0.01----------------------------------------------------------------------

@@ -65,4 +65,7 @@ int pgen_store_num(int *, const char *);
 int validate_mac(const char *);
 int validate_num(const char *);
 int encode_name(char *, const char *);
+int pad1(char *);
+int padN(FILE *, char *);
+int raw_data_writer(FILE *, char *);
 #endif /* PGEN_H */
