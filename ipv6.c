@@ -24,39 +24,39 @@ struct ipv6_packet {
 	 traffic-class 8 bits
 	 flow-label 20 bits
 	 */
-	uint32_t ver_tc_fw;
-	uint16_t payload_length;
-	uint8_t next_header;
-	uint8_t hop_limit;
-	uint8_t src[16];
-	uint8_t dst[16];
+	int32_t ver_tc_fw;
+	int16_t payload_length;
+	char next_header;
+	char hop_limit;
+	char src[16];
+	char dst[16];
 };
 
 struct hbh_packet {
-	uint8_t nxt_hdr;
-	uint8_t ext_len;
+	char nxt_hdr;
+	char ext_len;
 	char data;
 };
 
 struct dh_packet {
-	uint8_t nxt_hdr;
-	uint8_t ext_len;
+	char nxt_hdr;
+	char ext_len;
 	char data;
 };
 
 struct routing_hdr_packet {
-	uint8_t nxt_hdr;
-	uint8_t ext_len;
-	uint8_t type;
-	uint8_t seg_left;
-	uint8_t data;
+	char nxt_hdr;
+	char ext_len;
+	char type;
+	char seg_left;
+	char data;
 };
 
 struct fragment_hdr {
-	uint8_t nxt_hdr;
-	uint8_t res;
-	uint16_t fo_res_m;
-	uint32_t identification;
+	char nxt_hdr;
+	char res;
+	int16_t fo_res_m;
+	int32_t identification;
 };
 
 /**
@@ -130,7 +130,7 @@ err:
  */
 char* ipv6_fragment_hdr_writer(FILE *fp, char *cp_cur) {
 	struct fragment_hdr *pkt = (struct fragment_hdr *)cp_cur;
-	uint8_t option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
 	/**
 	 * Totally 4 items need for fragment header. [RFC-2460]
 	 *
@@ -193,7 +193,7 @@ err:
  */
 char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 	struct routing_hdr_packet *pkt = (struct routing_hdr_packet *)cp_cur;
-	uint8_t option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
 	/**
 	 * 5 items need for writing routing header [RFC-2460]
 	 *
@@ -246,7 +246,8 @@ char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 						goto err;
 					if (strcmp(option, "RH_ADDR"))
 						goto err;
-					if (ip6_writer(((&pkt->data)+(((len/2)-oitems)*16)+4), value))
+					if (ip6_writer(((&pkt->data)+(((len/2)-oitems)*16)+4),
+							   (const char *)value))
 						goto err;
 					oitems--;
 				}

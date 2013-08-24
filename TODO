@@ -1,5 +1,5 @@
  * Read about NDisc options form update RFCs and attach.
- * Have one more look at IPv6 extension headers
+ * Have one more look at IPv6 extension headers [24-08-2013]
  * Add support for type-1, type-2 routing headers
  * Add support for short form of IPv6 prefix in RA prefix option
  * MAC validation is yet to be added [19-08-2013]

@@ -89,7 +89,7 @@ int32_t send_packet(const char *if_name, const char *dst_mac, const char *cp_buf
     /* Set sending socket address */
     s_sock_addr.sll_ifindex = s_if_idx.ifr_ifindex;
     s_sock_addr.sll_halen = ETH_ALEN;
-    if (mac_writer(s_sock_addr.sll_addr, dst_mac)) {
+    if (mac_writer((char *)s_sock_addr.sll_addr, dst_mac)) {
 		PGEN_INFO("dst mac writing error");
         goto err;
     }
@@ -380,7 +380,7 @@ err:
  */
 int32_t ip6_expander(char *dst, const char *src) {
 	int32_t len, rem, dots;
-	int32_t i, j = 0, k = 0, nxt_col;
+	int32_t i, j = 0, k = 0;
 	char intr[IPV6_ADDR_MAX_LEN], temp[5];
 
 	if (!dst || !src)
@@ -482,14 +482,16 @@ next:
 
 		/* Ignore multiline comments */
 		if (line[0] == '/' && line[1] == '*') {
-			while (fscanf(fp, "%c", &ch) != EOF)
-				if (ch == '*')
+			while (fscanf(fp, "%c", &ch) != EOF) {
+				if (ch == '*') {
 					if(fscanf(fp, "%c", &ch) != EOF) {
 						if (ch == '/')
 							goto next;
 					}
 					else
 						goto err;
+				}
+			}
 			goto err;
 		}
 
@@ -646,7 +648,6 @@ int32_t pgen_store_num(int32_t *i, const char *c) {
 int32_t validate_if(const char *if_name) {
     struct ifreq req;
     int32_t sockfd;
-    int32_t ret;
 
 	/* Null check */
 	if (!if_name) {

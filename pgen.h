@@ -29,6 +29,7 @@
 #include <net/if.h>
 #include <errno.h>
 #include <linux/limits.h>
+#include <unistd.h>
 
 #define DEF_PGEN_CONF "/etc/pgen.conf"
 #define ETH_ALEN 6
@@ -60,10 +61,14 @@ int pgen_strcmp(const char *, const char *);
 int pgen_parse_option(FILE *, char *, char *);
 int send_packet(const char *, const char *, const char *, const int);
 int mac_writer(char *, const char *);
+int ip6_writer(char *, const char *);
+int ip6_prefix_writer(char *, char *);
+int ip6_expander(char *, const char *);
 int ip4_writer(char *, const char *);
 int pgen_store_num(int *, const char *);
 int validate_mac(const char *);
 int validate_num(const char *);
+int validate_if(const char *);
 int encode_name(char *, const char *);
 int pad1(char *);
 int padN(FILE *, char *);

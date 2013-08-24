@@ -19,8 +19,8 @@
 #include "pgen.h"
 
 struct icmp6_hdr{
-	uint8_t type;
-	uint8_t code;
+	char type;
+	char code;
 	int16_t checksum;
 };
 
@@ -32,31 +32,31 @@ struct echo6_pkt {
 	 * The entire value from ECHO6_DATA option will be dumped here.
 	 * So user should take care of the buffer size.
 	 */
-	uint8_t data;
+	char data;
 };
 
 struct ndisc_ns_pkt {
 	/* 4-Byte reserved data */
 	uint32_t reserved;
-	uint8_t target_addr[16];
+	char target_addr[16];
 	/**
 	 * data is just a place holder. It only specifies the starting address.
 	 * The entire value from NDISC_NS_OPTION option will be dumped here.
 	 * So user should take care of the buffer size.
 	 */
-	uint8_t option;
+	char option;
 };
 
 struct ndisc_na_pkt {
 	/* R, S, O flag [1-bit each] and 29-bits resvered */
 	uint32_t RSO_res;
-	uint8_t target_addr[16];
+	char target_addr[16];
 	/**
 	 * data is just a place holder. It only specifies the starting address.
 	 * The entire value from NDISC_NA_OPTION option will be dumped here.
 	 * So user should take care of the buffer size.
 	 */
-	uint8_t option;
+	char option;
 };
 
 struct ndisc_rs_pkt {
@@ -67,13 +67,13 @@ struct ndisc_rs_pkt {
 	 * The entire value from NDISC_RS_OPTION option will be dumped here.
 	 * So user should take care of the buffer size.
 	 */
-	uint8_t option;
+	char option;
 };
 
 struct ndisc_ra_pkt {
-	uint8_t cur_hop_limit;
+	char cur_hop_limit;
 	/* m(1) + o(1) + res(6) */
-	uint8_t m_o_res;
+	char m_o_res;
 	uint16_t router_lifetime;
 	uint32_t reachable_time;
 	uint32_t retrans_timer;
@@ -82,7 +82,7 @@ struct ndisc_ra_pkt {
 	 * The entire value from NDISC_RA_OPTION option will be dumped here.
 	 * So user should take care of the buffer size.
 	 */
-	uint8_t option;
+	char option;
 };
 
 /**
@@ -107,7 +107,6 @@ int32_t calculate_icmp6_checksum(struct icmp6_hdr *pkt, int32_t len, FILE *fp) {
 	uint32_t checksum = 0;
 	int32_t init_pos, pos;
 	char src[16] = {0}, dst[16] = {0};
-	uint16_t tmp = 0;
 	uint16_t *icmp6_pkt = (uint16_t *)pkt;
 	int32_t i;
 
@@ -159,7 +158,7 @@ int32_t calculate_icmp6_checksum(struct icmp6_hdr *pkt, int32_t len, FILE *fp) {
 		len -= 2;
 	}
 	if (len > 0)
-		checksum += ((*(uint8_t *)icmp6_pkt) << 8);
+		checksum += ((*(char *)icmp6_pkt) << 8);
 
 	/* Make it into 16 bits */
 	while (checksum >> 16 != 0)
@@ -282,7 +281,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 		if (!strcmp(option, "NDISC_RA_CUR_HOP_LIMIT")) {
 			if (pgen_store_num(&tmp, value))
 				goto err;
-			pkt->cur_hop_limit = (uint8_t)tmp;
+			pkt->cur_hop_limit = (char)tmp;
 		}
 		else if (!strcmp(option, "NDISC_RA_M_FLAG")) {
 			if (pgen_store_num(&tmp, value))
@@ -339,7 +338,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						op++;
 					}
 					else
@@ -350,7 +349,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						/* Option length will be 8 octets unit */
 						op_len += tmp * 8;
 						op++;
@@ -376,7 +375,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						op++;
 					}
 					else
@@ -387,7 +386,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						/* option length is in 8 octets uint */
 						op_len += tmp * 8;
 						op++;
@@ -400,7 +399,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_PREFIX_LEN")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						op++;
 					}
 					else
@@ -475,7 +474,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						op++;
 					}
 					else
@@ -486,7 +485,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						/* Option length will be in 8 octets uint */
 						op_len += tmp * 8;
 						op++;
@@ -517,7 +516,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						op++;
 					}
 					else
@@ -528,7 +527,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						/* option len will be in 8 octets unit */
 						op_len += tmp * 8;
 						op++;
@@ -572,7 +571,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_TYPE")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						op++;
 					}
 					else
@@ -583,7 +582,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					if (!strcmp(option, "NDISC_RA_OP_LEN")) {
 						if (pgen_store_num(&tmp, value))
 							goto err;
-						*op = (uint8_t)tmp;
+						*op = (char)tmp;
 						/* option length in 8-octet unit */
 						op_len += tmp * 8;
 						op++;
@@ -693,7 +692,7 @@ char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
 			if (!strcmp(option, "NDISC_RS_OP_TYPE")) {
 				if (pgen_store_num(&tmp, value))
 					goto err;
-				*op = (uint8_t)tmp;
+				*op = (char)tmp;
 				op++;
 			}
 			else
@@ -704,7 +703,7 @@ char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
 			if (!strcmp(option, "NDISC_RS_OP_LEN")) {
 				if (pgen_store_num(&tmp, value))
 					goto err;
-				*op = (uint8_t)tmp;
+				*op = (char)tmp;
 				/* option length will be in 8 octets unit */
 				op_len += tmp * 8;
 				op++;
@@ -780,7 +779,7 @@ char* pgen_ndisc_ns_writer(FILE *fp, char *cp_cur) {
 				if (!strcmp(option, "NDISC_NS_OP_TYPE")) {
 					if (pgen_store_num(&tmp, value))
 						goto err;
-					*op_ptr = (uint8_t)tmp;
+					*op_ptr = (char)tmp;
 					op_ptr++;
 				}
 				else
@@ -791,7 +790,7 @@ char* pgen_ndisc_ns_writer(FILE *fp, char *cp_cur) {
 				if (!strcmp(option, "NDISC_NS_OP_LEN")) {
 					if (pgen_store_num(&tmp, value))
 						goto err;
-					*op_ptr = (uint8_t)tmp;
+					*op_ptr = (char)tmp;
 					op_ptr++;
 				}
 				else
@@ -890,7 +889,7 @@ char* pgen_ndisc_na_writer(FILE *fp, char *cp_cur) {
 				if (!strcmp(option, "NDISC_NA_OP_TYPE")) {
 					if (pgen_store_num(&tmp, value))
 						goto err;
-					*op_ptr = (uint8_t)tmp;
+					*op_ptr = (char)tmp;
 					op_ptr++;
 				}
 				else
@@ -901,7 +900,7 @@ char* pgen_ndisc_na_writer(FILE *fp, char *cp_cur) {
 				if (!strcmp(option, "NDISC_NA_OP_LEN")) {
 					if (pgen_store_num(&tmp, value))
 						goto err;
-					*op_ptr = (uint8_t)tmp;
+					*op_ptr = (char)tmp;
 					op_ptr++;
 				}
 				else
@@ -968,12 +967,12 @@ char* pgen_icmp6_writer(FILE *fp, char *cp_cur) {
 		if (!strcmp(option, "ICMP6_TYPE")) {
 			if (pgen_store_num(&tmp, value))
 				goto err;
-			pkt->type = (uint8_t)tmp;
+			pkt->type = (char)tmp;
 		}
 		else if (!strcmp(option, "ICMP6_CODE")) {
 			if (pgen_store_num(&tmp, value))
 				goto err;
-			pkt->code = (uint8_t)tmp;
+			pkt->code = (char)tmp;
 		}
 		else if (!strcmp(option, "ICMP6_CHECKSUM")) {
 			/* User could give his own checksum. Could try a wrong one */

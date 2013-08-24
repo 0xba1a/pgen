@@ -21,15 +21,15 @@
 #include "pgen.h"
 
 struct arp_packet {
-	unsigned short hw_type;
-	unsigned short proto_type;
-	unsigned char hw_len;
-	unsigned char proto_len;
-	unsigned short op;
-	unsigned char src_mac[6];
-	unsigned char src_ip[4];
-	unsigned char dst_mac[6];
-	unsigned char dst_ip[4];
+	short hw_type;
+	short proto_type;
+	char hw_len;
+	char proto_len;
+	short op;
+	char src_mac[6];
+	char src_ip[4];
+	char dst_mac[6];
+	char dst_ip[4];
 };
 
 /**

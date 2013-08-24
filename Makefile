@@ -1,5 +1,5 @@
 all:
-	gcc -o pgen *.c
+	gcc -Wall -o pgen *.c
 debug:
 	gcc -Wall -g -o pgen *.c
 clean:
