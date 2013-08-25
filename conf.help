@@ -292,6 +292,10 @@ are,
 		NDISC_RA_PREFIX_INFO
 		NDISC_RA_SRC_LINK_ADDR
 		NDISC_RA_MTU
+		NDISC_RA_RDNSS
+		NDISC_RA_DNSSL
+		RAW
+			Raw hex data that will be dumped. Should be followed by RAW_DATA
 
 --- Common RA option fields ---
 10. NDISC_RA_OP_TYPE

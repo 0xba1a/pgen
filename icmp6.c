@@ -316,7 +316,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 			op_num = tmp;
 		}
 		else if (!strcmp(option, "NDISC_RA_OPTION")) {
-			op = (char *)&(pkt->option);
+			op = &pkt->option;
 
 			/**
 			 * Only three known options as of now [RFC-4681] 
@@ -623,7 +623,7 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 							if (ret < 0)
 								goto err;
 							len += ret;
-							op += len;
+							op += ret;
 						}
 						else
 							goto err;
@@ -632,6 +632,17 @@ char* pgen_ndisc_ra_writer(FILE *fp, char *cp_cur) {
 					/* pad to 8-octet multiple */
 					op += (8 - (len % 8));
 				}
+
+				/* RAW */
+				else if (!strcmp(value, "RAW")) {
+					tmp = raw_data_writer(fp, op);
+					if (tmp < 0)
+						goto err;
+					op_len += tmp;
+					op += tmp;
+				}
+
+				/* Unknown option */
 				else
 					goto err;
 

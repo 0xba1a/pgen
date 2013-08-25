@@ -718,6 +718,7 @@ int encode_name(char *buff, const char *name) {
 	len = strlen(name);
 	if (len == 0)
 		goto err;
+	/* len byte */
 	else {
 		*buff = len;
 		buff++;
@@ -816,7 +817,7 @@ err:
  * @param	buff	buffer where the data will be written
  *
  * @return
- *			0		Success
+ *			len		Success
  *			-1		Error
  *
  * @Description
@@ -840,6 +841,7 @@ int raw_data_writer(FILE *fp, char *buff) {
     if ((value[0] != '0') && (value[1] != 'x' || value[1] != 'X'))
         goto err;
 
+	printf("%s\n", value);
     /* Read a nibble at a time and write a byte */
 	i = 2;
     while (value[i] != '\0') {
