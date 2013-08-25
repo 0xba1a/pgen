@@ -368,6 +368,8 @@ Router Solicitation------------------------------------------------------------
 2. NDISC_RS_OPTION
 	The Router Solicitaion option. pgen supports followint RS options
 		NDISC_RS_SRC_LINK_ADDR
+		RAW
+			Raw hex data that will be dumped. Should be followed by RAW_DATA
 
 3. NDISC_RS_OP_TYPE
 	Option type for the RS option. For Target Source Link Layer address option
@@ -399,6 +401,8 @@ Neighbor Advertisement---------------------------------------------------------
 6. NDISC_NA_OPTION
 	The NA option. pgen supports
 		NDISC_NA_SRC_LINK_ADDR
+		RAW
+			Raw hex data that will be dumped. Should be followed by RAW_DATA
 
 7. NDISC_NA_OP_TYPE
 	Type of NA option. For Target Link Layer Address, type will be 2
@@ -420,6 +424,8 @@ Neighbor Solicitation----------------------------------------------------------
 3. NDISC_NS_OPTION
 	Neighbor Soliciation option. The only supported option is
 		NDISC_NS_SRC_LINK_ADDR
+		RAW
+			Raw hex data that will be dumped. Should be followed by RAW_DATA
 
 3. NDISC_NS_OP_TYPE
 	Type of NS option. 1 for Source Link Layer Address option and 2 for Target

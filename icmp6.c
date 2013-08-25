@@ -685,55 +685,86 @@ char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
 	 * Having 1 item
 	 * 1. Option - variable length
 	 */
-	int32_t tmp, op_len = 0;
+	int32_t tmp, op_len = 0, op_num;
 
 	if (pgen_parse_option(fp, option, value))
 		goto err;
 
+	if (!strcmp(option, "NDISC_RS_OP_NUM")) {
+		if (pgen_store_num(&tmp, value))
+			goto err;
+		op_num = tmp;
+	}
+	else
+		goto err;
+
+	if (pgen_parse_option(fp, option, value))
+		goto err;
 	/* Program expects the option to be in order */
 	if (!strcmp(option, "NDISC_RS_OPTION")) {
-		if (!strcmp(value, "NO_OPTION"))
-			op_len += 0;
 
-		/* Source Link Layer address and the only known option */
-		else if (!strcmp(value, "NDISC_RS_SRC_LINK_ADDR")) {
-			op = (char *)&(pkt->option);
-			if (pgen_parse_option(fp, option, value))
-				goto err;
-			if (!strcmp(option, "NDISC_RS_OP_TYPE")) {
-				if (pgen_store_num(&tmp, value))
+		while (op_num--) {
+			if (!strcmp(value, "NO_OPTION"))
+				op_len += 0;
+
+			/* Source Link Layer address and the only known option */
+			else if (!strcmp(value, "NDISC_RS_SRC_LINK_ADDR")) {
+				op = (char *)&(pkt->option);
+				if (pgen_parse_option(fp, option, value))
 					goto err;
-				*op = (char)tmp;
-				op++;
+				if (!strcmp(option, "NDISC_RS_OP_TYPE")) {
+					if (pgen_store_num(&tmp, value))
+						goto err;
+					*op = (char)tmp;
+					op++;
+				}
+				else
+					goto err;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "NDISC_RS_OP_LEN")) {
+					if (pgen_store_num(&tmp, value))
+						goto err;
+					*op = (char)tmp;
+					/* option length will be in 8 octets unit */
+					op_len += tmp * 8;
+					op++;
+				}
+				else
+					goto err;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "NDISC_RS_OP_SRC_LINK_ADDR")) {
+					if (mac_writer(op, value))
+					goto err;
+					op += 6;
+				}
+				else
+					goto err;
 			}
+
+			/* RAW */
+			else if (!strcmp(value, "RAW")) {
+				tmp = raw_data_writer(fp, op);
+				if (tmp < 0)
+					goto err;
+				op += tmp;
+				op_len += tmp;
+			}
+
+			/* Unknown option */
 			else
 				goto err;
 
-			if (pgen_parse_option(fp, option, value))
-				goto err;
-			if (!strcmp(option, "NDISC_RS_OP_LEN")) {
-				if (pgen_store_num(&tmp, value))
+			if (op_num) {
+				if (pgen_parse_option(fp, option, value))
 					goto err;
-				*op = (char)tmp;
-				/* option length will be in 8 octets unit */
-				op_len += tmp * 8;
-				op++;
-			}
-			else
-				goto err;
-
-			if (pgen_parse_option(fp, option, value))
-				goto err;
-			if (!strcmp(option, "NDISC_RS_OP_SRC_LINK_ADDR")) {
-				if (mac_writer(op, value))
+				if (strcmp(option, "NDISC_RS_OPTION"))
 					goto err;
-				op += 6;
 			}
-			else
-				goto err;
 		}
-		else
-			goto err;
 	}
 	else
 		goto err;
@@ -743,6 +774,7 @@ char* pgen_ndisc_rs_writer(FILE *fp, char *cp_cur) {
 
 err:
 	PGEN_INFO("Error while writing ICMPv6 RS packet");
+	PGEN_PRINT_DATA("%s\t%s\n", option, value);
 	return NULL;
 }
 
@@ -760,13 +792,16 @@ err:
 char* pgen_ndisc_ns_writer(FILE *fp, char *cp_cur) {
 	struct ndisc_ns_pkt *pkt = (struct ndisc_ns_pkt *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	char *op_ptr;
 	/**
 	 * Having only two items.
 	 *
-	 * 1.Target address - 16B
-	 * 2.Option - Variable length
+	 * 1. Target address - 16B
+	 * 2. Option - Variable length
+	 *
+	 * 3. Number of options
 	 */
-	int32_t items = 2, tmp, op_len = 0;
+	int32_t items = 3, tmp, op_len = 0, op_num;
 
 	while (items--) {
 		if (pgen_parse_option(fp, option, value))
@@ -776,51 +811,75 @@ char* pgen_ndisc_ns_writer(FILE *fp, char *cp_cur) {
 			if (ip6_writer(pkt->target_addr, value))
 				goto err;
 		}
-		else if (!strcmp(option, "NDISC_NS_OPTION")) {
-			/* Program expects the option to be in order */
-			if (!strcmp(value, "NO_OPTION"))
-				op_len += 0;
-
-			/* This is only known option as of now. [RFC-4861] */
-			else if (!strcmp(value, "NDISC_NS_SRC_LINK_ADDR")) {
-				char *op_ptr = (char *)&(pkt->option);
-
-				if (pgen_parse_option(fp, option, value))
-					goto err;
-				if (!strcmp(option, "NDISC_NS_OP_TYPE")) {
-					if (pgen_store_num(&tmp, value))
-						goto err;
-					*op_ptr = (char)tmp;
-					op_ptr++;
-				}
-				else
-					goto err;
-
-				if (pgen_parse_option(fp, option, value))
-					goto err;
-				if (!strcmp(option, "NDISC_NS_OP_LEN")) {
-					if (pgen_store_num(&tmp, value))
-						goto err;
-					*op_ptr = (char)tmp;
-					op_ptr++;
-				}
-				else
-					goto err;
-
-				if (pgen_parse_option(fp, option, value))
-					goto err;
-				if (!strcmp(option, "NDISC_NS_OP_SRC_LINK_ADDR")) {
-					if (mac_writer(op_ptr, value))
-						goto err;
-				}
-				else
-					goto err;
-
-				/* len is in 8 octets uint */
-				op_len += tmp * 8;
-			}
-			else
+		else if (!strcmp(option, "NDISC_NS_OP_NUM")) {
+			if (pgen_store_num(&op_num, value))
 				goto err;
+		}
+		else if (!strcmp(option, "NDISC_NS_OPTION")) {
+			op_ptr = (char *)&(pkt->option);
+			/* Program expects the option to be in order */
+			while (op_num--) {
+				if (!strcmp(value, "NO_OPTION"))
+					op_len += 0;
+
+				/* This is only known option as of now. [RFC-4861] */
+				else if (!strcmp(value, "NDISC_NS_SRC_LINK_ADDR")) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_NS_OP_TYPE")) {
+						if (pgen_store_num(&tmp, value))
+							goto err;
+						*op_ptr = (char)tmp;
+						op_ptr++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_NS_OP_LEN")) {
+						if (pgen_store_num(&tmp, value))
+							goto err;
+						*op_ptr = (char)tmp;
+						op_ptr++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_NS_OP_SRC_LINK_ADDR")) {
+						if (mac_writer(op_ptr, value))
+							goto err;
+						op_ptr += 6;
+					}
+					else
+						goto err;
+
+					/* len is in 8 octets uint */
+					op_len += tmp * 8;
+				}
+
+				/* RAW */
+				else if (!strcmp(value, "RAW")) {
+					tmp = raw_data_writer(fp, op_ptr);
+					if (tmp < 0)
+						goto err;
+					op_ptr += tmp;
+					op_len += tmp;
+				}
+
+				/* Unknown option */
+				else
+					goto err;
+			
+				if (op_num) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (strcmp(option, "NDISC_NS_OPTION"))
+						goto err;
+				}
+			}
 		}
 		else
 			goto err;
@@ -831,6 +890,7 @@ char* pgen_ndisc_ns_writer(FILE *fp, char *cp_cur) {
 
 err:
 	PGEN_INFO("Error while writing ICMPv6 NS packet");
+	PGEN_PRINT_DATA("%s\t%s\n", option, value);
 	return NULL;
 }
 
@@ -857,8 +917,10 @@ char* pgen_ndisc_na_writer(FILE *fp, char *cp_cur) {
 	 * 3. O Flag 
 	 * 4. Target addr
 	 * 5. The option
+	 *
+	 * 6. Number of options
 	 */
-	int32_t items = 5, tmp, op_len = 0;
+	int32_t items = 6, tmp, op_len = 0, op_num;
 
 	while (items--) {
 		if (pgen_parse_option(fp, option, value))
@@ -886,51 +948,74 @@ char* pgen_ndisc_na_writer(FILE *fp, char *cp_cur) {
 			if (ip6_writer(pkt->target_addr, value))
 				goto err;
 		}
-		else if (!strcmp(option, "NDISC_NA_OPTION")) {
-			/* Program expects the options to be in order */
-			if (!strcmp(value, "NO_OPTION"))
-				op_len += 0;
-
-			/* This is only known option as of now. [RFC-4861] */
-			else if (!strcmp(value, "NDISC_NA_SRC_LINK_ADDR")) {
-				op_ptr = (char *)&(pkt->option);
-
-				if (pgen_parse_option(fp, option, value))
-					goto err;
-				if (!strcmp(option, "NDISC_NA_OP_TYPE")) {
-					if (pgen_store_num(&tmp, value))
-						goto err;
-					*op_ptr = (char)tmp;
-					op_ptr++;
-				}
-				else
-					goto err;
-
-				if (pgen_parse_option(fp, option, value))
-					goto err;
-				if (!strcmp(option, "NDISC_NA_OP_LEN")) {
-					if (pgen_store_num(&tmp, value))
-						goto err;
-					*op_ptr = (char)tmp;
-					op_ptr++;
-				}
-				else
-					goto err;
-
-				if (pgen_parse_option(fp, option, value))
-					goto err;
-				if (!strcmp(option, "NDISC_NA_OP_TAR_LINK_ADDR")) {
-					if (mac_writer(op_ptr, value))
-						goto err;
-				}
-				else
-					goto err;
-
-				/* len in 8 octets unit */
-				op_len += tmp * 8;
-			}
-			else
+		else if (!strcmp(option, "NDISC_NA_OP_NUM")) {
+			if (pgen_store_num(&op_num, value))
 				goto err;
+		}
+		else if (!strcmp(option, "NDISC_NA_OPTION")) {
+			op_ptr = (char *)&(pkt->option);
+
+			while (op_num--) {
+				/* Program expects the options to be in order */
+				if (!strcmp(value, "NO_OPTION"))
+					op_len += 0;
+
+				/* This is only known option as of now. [RFC-4861] */
+				else if (!strcmp(value, "NDISC_NA_SRC_LINK_ADDR")) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_NA_OP_TYPE")) {
+						if (pgen_store_num(&tmp, value))
+							goto err;
+						*op_ptr = (char)tmp;
+						op_ptr++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_NA_OP_LEN")) {
+						if (pgen_store_num(&tmp, value))
+							goto err;
+						*op_ptr = (char)tmp;
+						op_ptr++;
+					}
+					else
+						goto err;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (!strcmp(option, "NDISC_NA_OP_TAR_LINK_ADDR")) {
+						if (mac_writer(op_ptr, value))
+							goto err;
+						op_ptr += 6;
+					}
+					else
+						goto err;
+
+					/* len in 8 octets unit */
+					op_len += tmp * 8;
+				}
+
+				/* RAW */
+				else if (!strcmp(value, "RAW")) {
+					tmp = raw_data_writer(fp, op_ptr);
+					if (tmp < 0)
+						goto err;
+					op_ptr += tmp;
+					op_len += tmp;
+				}
+				else
+					goto err;
+
+				if (op_num) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (strcmp(option, "NDISC_NA_OPTION"))
+						goto err;
+				}
+			}
 		}
 		else
 			goto err;

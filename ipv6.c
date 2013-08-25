@@ -60,64 +60,6 @@ struct fragment_hdr {
 };
 
 /**
- * @param	buff	Destination pointer where the option will be stored
- * @param	value	User given hex value that will be stored in the destination
- *					pointer
- *
- * @return
- *			0		Success
- *			-1		Error
- *
- * @Description
- *		IPv6 extension headers have multiple variable length options. As of now
- * This program doesn't recognize any option and handle it. So it requires the
- * user to give hex value of the option directly through configuration file.
- * This function stores the variable length hex value in the destination
- * pointer.
- */
-
-int option_writer(char *buff, char *value) {
-	uint8_t byte = 0;
-	uint32_t len = 0;
-
-	/* NULL check */
-	if ((buff == NULL) || (value == NULL))
-		goto err;
-
-	/* expects user to use 0x/0X prefix for the hex option value */
-	if (*value++ != '0' && (*value != 'x' || *value != 'X'))
-		goto err;
-
-	/* Read a nibble at a time and write a byte */
-	while (*(++value) != '\0') {
-		len++;
-		if (*value >= '0' && *value <= '9')
-			byte = byte * 16 + *value - '0';
-		else if (*value >= 'a' && *value <= 'f')
-			byte = byte * 16 + *value - 'a' + 10;
-		else if (*value >= 'A' && *value <= 'F')
-			byte = byte * 16 + *value - 'A' + 10;
-		else
-			goto err;
-
-		if (len % 2 == 0) {
-			*buff++ = byte;
-			byte = 0;
-		}
-	}
-
-	/* length of the hex value must be in even */
-	if (len % 2 != 0)
-		goto err;
-	else
-		/* Return length of option */
-		return len/2;
-
-err:
-	return -1;
-}
-
-/**
  * @param	fp		File pointer to the configuration value
  * @param	cp_cur	The packet buffer
  *
