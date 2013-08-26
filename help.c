@@ -452,6 +452,30 @@ err:
 	return -1;
 }
 
+int ip6_elide_prefix(char *op, char *value, int32_t len) {
+	char ip6_addr[16];
+
+	/* NULL Check */
+	if (!value)
+		goto err;
+
+	if ((len > 16) || (len < 0))
+		goto err;
+	if (len == 16)
+		return 0;
+
+	if (inet_pton(AF_INET6, value, ip6_addr) < 1)
+		goto err;
+
+	memcpy(op, &ip6_addr[len], 16-len);
+	return 0;
+
+err:
+	PGEN_INFO("Error while eliding prefix from IPv6 address");
+	PGEN_PRINT_DATA("%s\n", value);
+	return -1;
+}
+
 /**
  * @param	fp		file pointer to the configuration file
  * @param	option	The option will be stored in this pointer and passed back
@@ -841,7 +865,6 @@ int raw_data_writer(FILE *fp, char *buff) {
     if ((value[0] != '0') && (value[1] != 'x' || value[1] != 'X'))
         goto err;
 
-	printf("%s\n", value);
     /* Read a nibble at a time and write a byte */
 	i = 2;
     while (value[i] != '\0') {

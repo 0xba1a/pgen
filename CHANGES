@@ -2,4 +2,5 @@
  * DNSSL option for RA added
  * Support for IPv6 options PAD1 and PAD2 added
  * ICMPv6 manual checksum bug fixed
+ * Support for Type-3 Routing Header (RPL) added
 pgen-0.01----------------------------------------------------------------------

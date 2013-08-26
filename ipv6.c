@@ -136,6 +136,7 @@ err:
 char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 	struct routing_hdr_packet *pkt = (struct routing_hdr_packet *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	char *op;
 	/**
 	 * 5 items need for writing routing header [RFC-2460]
 	 *
@@ -145,7 +146,9 @@ char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 	 * 4. Segments left
 	 * 5. Type specific data
 	 */
-	int32_t items = 5, tmp, len = 0, type, oitems;
+	int32_t items = 5, tmp, len = 0, type, oitems, op_len;
+	/* Type-3 Routing Header Specific data */
+	int32_t cmprI, cmprE, pad;
 
 	while (items--) {
 		if (pgen_parse_option(fp, option, value))
@@ -194,12 +197,98 @@ char* ipv6_routing_hdr_writer(FILE *fp, char *cp_cur) {
 					oitems--;
 				}
 			}
+
+			/**
+			 * Type-3: Source Routing Header. RFC-6554
+			 */
+			else if (type == 3) {
+				op = &pkt->data;
+				op_len = 0;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "RH_CMPRI")) {
+					if (pgen_store_num(&cmprI, value))
+						goto err;
+					*op |= ((cmprI << 4) & 0xf0);
+				}
+				else
+					goto err;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "RH_CMPRE")) {
+					if (pgen_store_num(&cmprE, value))
+						goto err;
+					*op |= (cmprE & 0x0f);
+				}
+				else
+					goto err;
+
+				op++;
+				op_len++;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "RH_PAD")) {
+					if (pgen_store_num(&pad, value))
+						goto err;
+					if (pad != -1)
+						*op |= (pad & 0x0f);
+				}
+				else
+					goto err;
+
+				/* 20-bits reserved */
+				op += 3;
+				op_len += 3;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "RH_OP_NUM")) {
+					if (pgen_store_num(&oitems, value))
+						goto err;
+				}
+
+				while (oitems--) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (strcmp(option, "RH_ADDR"))
+						goto err;
+
+					/* In case of Last Item */
+					if (!oitems) {
+						if (ip6_elide_prefix(op, value, cmprE))
+							goto err;
+						op += (16 - cmprE);
+						op_len += (16 - cmprE);
+						break;
+					}
+
+					if (ip6_elide_prefix(op, value, cmprI))
+						goto err;
+					op += (16 - cmprI);
+					op_len += (16 - cmprI);
+				}
+
+				/* pad */
+				if (pad == -1) {
+					op = &pkt->data + 1;
+					pad = 8 * (len + 1) - op_len - 4;
+					*op |= ((pad << 4) & 0xf0);
+				}
+			}
 		}
+
+		/* Unknown Option */
+		else
+			goto err;
 	}
-	return cp_cur + 8*(len+1);
+	return cp_cur + 8 * (len + 1);
 
 err:
 	PGEN_INFO("Error while writing Routing Header");
+	PGEN_PRINT_DATA("%s\t%s\n", option, value);
 	return NULL;
 }
 

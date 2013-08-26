@@ -64,6 +64,7 @@ int mac_writer(char *, const char *);
 int ip6_writer(char *, const char *);
 int ip6_prefix_writer(char *, char *);
 int ip6_expander(char *, const char *);
+int ip6_elide_prefix(char *, char *, int32_t);
 int ip4_writer(char *, const char *);
 int pgen_store_num(int *, const char *);
 int validate_mac(const char *);

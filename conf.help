@@ -213,6 +213,32 @@ is supported by pgen. But unfortunately type-0 routing header is deprecated.
 7. RH_ADDR
 	Routing header segments. One for each line. Use as many of this option as
 as you gave in RH_SEG_LEFT.
+
+--- For Type-3 Routing Header ---
+8. RH_CMPRI
+	Number of compression bytes that will be elided from IPv6 address prefix.
+Not for last segment. [0 - 16]
+
+9. RH_CMPRI
+	Number of compression bytes that will be elided from last IPv6 address
+prefix. [0 - 16]
+
+10. RH_PAD
+	Number of padding bytes after last segment. As IPv6 address compression is
+enabled, Segments left need not to be the half of the length. So total length
+may not be in multiple of 8 octets. In such cases padding bytes will be used.
+
+	Use -1 for pgen to calculate padding bytes to nearest 8 octet multiple.
+
+11. RH_OP_NUM
+	Number of IPv6 address or in other words number of segments. Used for
+pgen control purpose. This data will not be added to packet. Receiver could
+able to calculate number of segments from Length, CMPR-I, CMPR-E, pad data.
+
+	No. Of Items = 1 + ((Length - pad - (16 - CMPR-E)) / CMPR-I)
+
+12. RH_ADDR
+	Refer 7.RH_ADDR
 -------------------------------------------------------------------------------
 
 IPv6 Fragment Header-----------------------------------------------------------
