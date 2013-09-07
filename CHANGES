@@ -1,6 +1,15 @@
+pgen-0.01----------------------------------------------------------------------
  * RDNSS option for RA added
  * DNSSL option for RA added
  * Support for IPv6 options PAD1 and PAD2 added
  * ICMPv6 manual checksum bug fixed
  * Support for Type-3 Routing Header (RPL) added
-pgen-0.01----------------------------------------------------------------------
+ * RAW data entry option added for,
+    - NDISC RA
+    - NDISC RS
+    - NDISC NA
+    - NDISC NS
+    - IPv6 Hop-by-Hop extension header options
+    - IPv6 Destination header options
+ * RAW packet support is added. Hex stream could be dumped in as a packet.
+pgen-0.02----------------------------------------------------------------------

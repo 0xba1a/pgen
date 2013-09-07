@@ -848,7 +848,7 @@ err:
  *		Dumps hex string into buff.
  */
 int raw_data_writer(FILE *fp, char *buff) {
-	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN], val;
+	char option[MAX_OPTION_LEN], value[MAX_RAW_DATA_LEN], val;
 	uint8_t byte = 0;
     uint32_t i;
 

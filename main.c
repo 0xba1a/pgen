@@ -31,6 +31,7 @@ int32_t main(int32_t argc, char **argv) {
 	char option[MAX_OPTION_LEN];
 	char value[MAX_VALUE_LEN];
 	char conf_file[PATH_MAX];
+	int32_t len;
 
 	/* Choose the conf file */
 	if (argc < 2)
@@ -97,6 +98,12 @@ int32_t main(int32_t argc, char **argv) {
 		}
 		else if (!strcmp(option, "ICMP6")) {
 			cp_cur = pgen_icmp6_writer(fp, cp_cur);
+		}
+		else if (!strcmp(option, "RAW")) {
+			len = raw_data_writer(fp, cp_cur);
+			if (len < 0)
+				goto err;
+			cp_cur += len;
 		}
 		else {
 			PGEN_INFO("Packet type not yet supported");

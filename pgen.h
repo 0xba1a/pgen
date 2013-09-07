@@ -37,6 +37,7 @@
 #define CHAR_MAC_LEN 18
 #define MAX_OPTION_LEN 200
 #define MAX_VALUE_LEN 200
+#define MAX_RAW_DATA_LEN 2048
 #define MAX_LINE_LENGTH 1024
 
 #define PGEN_INFO(MSG) do {                                                    \
