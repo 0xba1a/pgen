@@ -479,3 +479,25 @@ ICMPv6 Echo--------------------------------------------------------------------
 			NO_DATA		For no data
 	Or the user has to give the data he wants in hex.
 -------------------------------------------------------------------------------
+
+                               ***** UDP *****
+1. UPD
+	UDP packet starts here
+
+2. UDP_SRC_PORT
+	Source port of UDP datagram
+
+3. UDP_DST_PORT
+	Destination port of UDP datagram
+
+4. UDP_LEN
+	Actual length of UDP packet
+
+5. UDP_CHECKSUM
+	Checksum of the UDP datagram. User can enter his desired checksum manually
+or could use -1 for pgen to calculate the checksum.
+
+6. UDP_DATA
+	The data that is encapsulted in an UDP datagram. Actually the type. As of
+now pgen supports following types.
+	* NO_DATA		For no data actually after UDP header

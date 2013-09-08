@@ -12,4 +12,5 @@ pgen-0.01----------------------------------------------------------------------
     - IPv6 Hop-by-Hop extension header options
     - IPv6 Destination header options
  * RAW packet support is added. Hex stream could be dumped in as a packet.
+ * UDP header support added
 pgen-0.02----------------------------------------------------------------------

@@ -43,6 +43,100 @@ int32_t pgen_strcmp(const char *s1, const char *s2) {
 }
 
 /**
+ * @param	pkt		The packet buffer
+ * @param	len		length of the ICMPv6 packet
+ * @param	fp		file pointer to the configuration file
+ *
+ * @return
+ *			0		Success
+ *			-1		Error
+ *
+ * @Description
+ *		This function reads the ICMPv6 packet, calculates checksum and fills
+ * the checksum field in the packet.
+ * [RFC-4443]
+ * The checksum is the 16-bit one's complement of the one's complement sum of
+ * the entire ICMPv6 message, starting with the ICMPv6 message type field, and
+ * prepended with a "pseudo-header" of IPv6 header fields...
+ */
+/* NOT FIXED */
+int16_t calculate_internet_checksum(int16_t *pkt, int32_t len,
+	   FILE *fp, int32_t type) {
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	uint32_t checksum = 0;
+	int32_t init_pos, pos;
+	char src[16] = {0}, dst[16] = {0};
+	int32_t i;
+
+	/* store the current position of cursur in the conf file */
+	init_pos = ftell(fp);
+	if (init_pos < 0)
+		goto err;
+
+	/* Move cursur to the starting of conf file */
+	if (fseek(fp, 0, SEEK_SET))
+		goto err;
+
+	/* Find src and dst addresses that immediately above from current pos */
+	do {
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+
+		pos = ftell(fp);
+
+		if (!strcmp(option, "IPV6_SRC_ADDR")) {
+			if (ip6_writer(src, value))
+				goto err;
+		}
+		else if (!strcmp(option, "IPV6_DST_ADDR")) {
+			if (ip6_writer(dst, value))
+				goto err;
+		}
+	} while ((pos != -1) && (pos < init_pos));
+
+	if (pos == -1)
+		goto err;
+
+	/* Process ipv6 src and dst addresses for checksum */
+	for (i = 0; i < 16; i += 2) {
+		checksum += (((src[i] & 0xff) << 8) | (src[i+1] & 0xff));
+		checksum += (((dst[i] & 0xff) << 8) | (dst[i+1] & 0xff));
+	}
+
+	/* process length of the icmpv6 message */	
+	checksum += len;
+
+	/* Process packet type. Packet type is always icmpv6 */
+	checksum += 0x3a;
+
+	/* Process icmpv6 packet data */
+	while (len > 1) {
+		checksum += htons(*pkt);
+		pkt++;
+		len -= 2;
+	}
+	if (len > 0)
+		checksum += ((*(char *)pkt) << 8);
+
+	/* Make it into 16 bits */
+	while (checksum >> 16 != 0)
+		checksum = (checksum & 0xffff) + (checksum >> 16);
+
+	/* One's complement */
+	checksum = ~checksum;
+
+	/* Restore the file position for furthur processing */
+	if (fseek(fp, init_pos, SEEK_SET))
+		goto err;
+
+	return (int16_t)checksum;
+
+err:
+	PGEN_INFO("Error while writing ICMPv6 checksum");
+	exit(-1);
+}
+
+/**
  * @param	if_name		name of the interface by which the packet has to be
  *						sent.
  * @param	dst_mac		Mac address of the destination node

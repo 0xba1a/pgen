@@ -90,14 +90,20 @@ int32_t main(int32_t argc, char **argv) {
 		if (!strcmp(option, "ETHER_HEADER")) {
 			cp_cur = pgen_ethr_hdr_writer(fp, cp_cur);
 		}
+		/* L2 */
 		else if (!strcmp(option, "ARP")) {
 			cp_cur = pgen_arp_writer(fp, cp_cur);
 		}
+		/* L3 */
 		else if (!strcmp(option, "IPV6")) {
 			cp_cur = pgen_ipv6_writer(fp, cp_cur);
 		}
+		/* L4 */
 		else if (!strcmp(option, "ICMP6")) {
 			cp_cur = pgen_icmp6_writer(fp, cp_cur);
+		}
+		else if (!strcmp(option, "UDP")) {
+			cp_cur = pgen_udp_writer(fp, cp_cur);
 		}
 		else if (!strcmp(option, "RAW")) {
 			len = raw_data_writer(fp, cp_cur);

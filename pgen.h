@@ -55,6 +55,7 @@ char* pgen_ethr_hdr_writer(FILE *, char *);
 char* pgen_arp_writer(FILE *, char *);
 char* pgen_ipv6_writer(FILE *, char *);
 char* pgen_icmp6_writer(FILE *, char *);
+char* pgen_udp_writer(FILE *, char *);
 
 /* Helpers */
 void usage();
@@ -75,4 +76,5 @@ int encode_name(char *, const char *);
 int pad1(char *);
 int padN(FILE *, char *);
 int raw_data_writer(FILE *, char *);
+int16_t calculate_internet_checksum(int16_t *, int32_t, FILE *, int32_t);
 #endif /* PGEN_H */
