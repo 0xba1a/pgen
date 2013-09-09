@@ -992,3 +992,48 @@ err:
 	PGEN_PRINT_DATA("%s\t%s\n", option, value);
     return -1;
 }
+
+int32_t pgen_hex_dump(int8_t *buff, const char *value) {
+	int32_t i;
+	char val;
+	int8_t byte = 0;
+
+	/* NULL check */
+	if (!buff || !value)
+		goto err;
+
+	/* expects user to use 0x/0X prefix for the hex option value */
+    if ((value[0] != '0') && (value[1] != 'x' || value[1] != 'X'))
+        goto err;
+
+	/* Read a nibble at a time and write a byte */
+    i = 2;
+    while (value[i] != '\0') {
+        val = value[i];
+        if (val >= '0' && val <= '9')
+            byte = byte * 16 + val - '0';
+        else if (val >= 'a' && val <= 'f')
+            byte = byte * 16 + val - 'a' + 10;
+        else if (val >= 'A' && val <= 'F')
+            byte = byte * 16 + val - 'A' + 10;
+        else
+            goto err;
+
+        if (i % 2 != 0) {
+            *buff++ = byte;
+            byte = 0;
+        }
+        i++;
+    }
+
+    /* length of the hex value must be in even */
+    if (i % 2 != 0)
+        goto err;
+    else
+        /* Return length of option */
+        return (i/2 - 1);
+
+err:
+	PGEN_INFO("Error while writing hex data to buffer");
+	return -1;
+}

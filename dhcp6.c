@@ -46,7 +46,8 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 	 *
 	 * 3. Number of options
 	 */
-	int32_t items=3, tmp;
+	int32_t items=3, tmp, op_num, op_len = 0;
+	int8_t *op_ptr;
 
 	while (items--) {
 		if (pgen_parse_option(fp, option, value))
@@ -69,11 +70,65 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 		else if (!strcmp(option, "DHCP6_OP_NUM")) {
 			if (pgen_store_num(&tmp, value))
 				goto err;
-			//op_num = tmp;
+			op_num = tmp;
 		}
 	}
 
-	return (cp_cur + sizeof(struct dhcp6_pkt));
+	/* Here comes the options */
+	op_ptr = &pkt->option;
+	while (op_num--) {
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+		if (!strcmp(option, "DHCP6_OP_CODE")) {
+			if (pgen_store_num(&tmp, value))
+				goto err;
+			tmp = htons(tmp);
+			memcpy(op_ptr, &tmp, 2);
+			op_ptr += 2;
+			op_len += 2;
+		}
+		else
+			goto err;
+
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+		if (!strcmp(option, "DHCP6_OP_LEN")) {
+			if (pgen_store_num(&tmp, value))
+				goto err;
+			tmp = htons(tmp);
+			memcpy(op_ptr, &tmp, 2);
+			op_ptr += 2;
+			op_len += 2;
+		}
+		else
+			goto err;
+
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+		if (!strcmp(option, "DHCP6_OPTION")) {
+			/* Client Identifier option */
+			if (!strcmp(value, "DHCP6_CLIENT_ID")) {
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (strcmp(option, "DHCP6_CLIENT_ID"))
+					goto err;
+				tmp = pgen_hex_dump(op_ptr, value);
+				if (tmp < 0)
+					goto err;
+				op_ptr += tmp;
+				op_len += tmp;
+			}
+			/* Unknown option */
+			else {
+				PGEN_INFO("Option not yet supported");
+				goto err;
+			}
+		}
+		else
+			goto err;
+	}
+
+	return (cp_cur + sizeof(struct dhcp6_pkt) + op_len - 1);
 
 err:
 	PGEN_INFO("Error while writing dhcp6 packet");

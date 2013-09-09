@@ -512,3 +512,18 @@ now pgen supports following types.
 
 3. DHCP6_OP_NUM
 	Number options that dhcp6 packet has
+
+DHCPV6_OPTION------------------------------------------------------------------
+4. DHCP6_OP_CODE
+	Dhcp6 option code
+
+5. DHCP6_OP_LEN
+	Length of dhcp6 option
+
+6. DHCP6_OPTION
+	The dhcp6 option. Supported options are
+	* DHCP6_CLIENT_ID		Client identifier option
+
+Client Identifier Option-------------------------------------------------------
+7. DHCP6_CLIENT_ID
+	DUID of Client Identifier Option

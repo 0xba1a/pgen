@@ -31,8 +31,6 @@ struct udp_packet {
 	char data;
 };
 
-
-
 char* pgen_udp_writer(FILE *fp, char *cp_cur) {
 	struct udp_packet *pkt = (struct udp_packet *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];

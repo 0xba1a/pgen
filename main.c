@@ -113,6 +113,7 @@ int32_t main(int32_t argc, char **argv) {
 		}
 		else {
 			PGEN_INFO("Packet type not yet supported");
+			PGEN_PRINT_DATA("%s\t%s\n", option, value);
 			goto err;
 		}
 		if (!cp_cur)
