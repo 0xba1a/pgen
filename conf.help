@@ -501,3 +501,14 @@ or could use -1 for pgen to calculate the checksum.
 	The data that is encapsulted in an UDP datagram. Actually the type. As of
 now pgen supports following types.
 	* NO_DATA		For no data actually after UDP header
+	* DHCPV6		For DHCPv6 packet
+
+                              ***** DHCPv6 *****
+1. DHCP6_MSG_TYPE
+	Type of the dhcp6 message.
+
+2. DHCP6_TRANS_ID
+	Transaction ID of the dhcp6 transaction
+
+3. DHCP6_OP_NUM
+	Number options that dhcp6 packet has

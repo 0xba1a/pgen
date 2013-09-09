@@ -56,6 +56,7 @@ char* pgen_arp_writer(FILE *, char *);
 char* pgen_ipv6_writer(FILE *, char *);
 char* pgen_icmp6_writer(FILE *, char *);
 char* pgen_udp_writer(FILE *, char *);
+char* pgen_dhcp6_writer(FILE *, char *);
 
 /* Helpers */
 void usage();

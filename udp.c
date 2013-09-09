@@ -23,6 +23,12 @@ struct udp_packet {
 	int16_t dst_port;
 	int16_t len;
 	int16_t checksum;
+	 /**
+     * data is just a place holder. It only specifies the starting address.
+     * UDP data will be dumped here.
+     * So user should take care of the buffer size.
+     */
+	char data;
 };
 
 
@@ -37,8 +43,10 @@ char* pgen_udp_writer(FILE *fp, char *cp_cur) {
 	 * 2. Destination Port
 	 * 3. Length
 	 * 4. Checksum
+	 *
+	 * 5. UDP data
 	 */
-	int32_t items = 4, tmp, len;
+	int32_t items = 5, tmp, len;
 	int32_t calculate_checksum = 0;
 
 	while (items--) {
@@ -68,15 +76,22 @@ char* pgen_udp_writer(FILE *fp, char *cp_cur) {
 			else
 				calculate_checksum = 1;
 		}
+		else if (!strcmp(option, "UDP_DATA")) {
+			if (!strcmp(value, "NO_DATA")) {
+				cp_cur += sizeof(struct udp_packet);
+			}
+			else if (!strcmp(value, "DHCPV6")) {
+				cp_cur = pgen_dhcp6_writer(fp, (char *)(&pkt->data));
+			}
+		}
+		else {
+			PGEN_INFO("Option not yet supported\n");
+			goto err;
+		}
 	}
 
-	if (pgen_parse_option(fp, option,value))
+	if (!cp_cur)
 		goto err;
-	if (!strcmp(option, "NO_DATA"))
-		/* do nothing */;
-	else if (!strcmp(option, "DHCPV6")) {
-		/* Not defined yet */
-	}
 
 	if (calculate_checksum) {
 		pkt->checksum = calculate_internet_checksum((int16_t *)pkt, len,
@@ -84,8 +99,10 @@ char* pgen_udp_writer(FILE *fp, char *cp_cur) {
 		pkt->checksum = htons(pkt->checksum);
 	}
 
-	return (cp_cur + len);
+	return cp_cur;
 
 err:
+	PGEN_INFO("Error while writing UDP header\n");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
 	return NULL;
 }
