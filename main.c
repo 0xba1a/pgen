@@ -82,7 +82,7 @@ int32_t main(int32_t argc, char **argv) {
 		PGEN_ERROR("malloc failed", errno);
 		goto err;
 	}
-	memset(cp_buff, 0, sizeof(buff_size));
+	memset(cp_buff, 0, buff_size);
 	cp_cur = cp_buff;
 
 	/* write data in the packet buffer */
