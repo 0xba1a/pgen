@@ -181,6 +181,7 @@ int32_t send_packet(const char *if_name, const char *dst_mac, const char *cp_buf
     }
 
     /* Set sending socket address */
+    memset(&s_sock_addr, 0, sizeof(struct sockaddr_ll));
     s_sock_addr.sll_ifindex = s_if_idx.ifr_ifindex;
     s_sock_addr.sll_halen = ETH_ALEN;
     if (mac_writer((char *)s_sock_addr.sll_addr, dst_mac)) {
