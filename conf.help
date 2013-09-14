@@ -527,3 +527,7 @@ DHCPV6_OPTION------------------------------------------------------------------
 Client Identifier Option-------------------------------------------------------
 7. DHCP6_CLIENT_ID
 	DUID of Client Identifier Option
+
+Server Identifier Option-------------------------------------------------------
+8. DHCP6_SERVER_ID
+	DUID Of Server. Given hex value will be dumped in packet

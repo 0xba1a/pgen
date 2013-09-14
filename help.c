@@ -107,7 +107,7 @@ int16_t calculate_internet_checksum(int16_t *pkt, int32_t len,
 	checksum += len;
 
 	/* Process packet type. Packet type is always icmpv6 */
-	checksum += 0x3a;
+	checksum += type;
 
 	/* Process icmpv6 packet data */
 	while (len > 1) {

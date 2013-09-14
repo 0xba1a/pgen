@@ -118,6 +118,15 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 				op_ptr += tmp;
 				op_len += tmp;
 			}
+			else if (!strcmp(value, "DHCP6_SERVER_ID")) {
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				tmp = pgen_hex_dump(op_ptr, value);
+				if (tmp < 0)
+					goto err;
+				op_ptr += tmp;
+				op_len += tmp;
+			}
 			/* Unknown option */
 			else {
 				PGEN_INFO("Option not yet supported");
