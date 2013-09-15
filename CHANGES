@@ -17,4 +17,6 @@ pgen-0.01----------------------------------------------------------------------
  	-> dhcp6 header added
 	-> Client identifier option added
 	-> Server identifier option added
+	-> Option Request Option added
+	-> Preference Option added
 pgen-0.02----------------------------------------------------------------------

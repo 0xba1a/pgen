@@ -118,6 +118,7 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 				op_ptr += tmp;
 				op_len += tmp;
 			}
+			/* Server Identifier Option */
 			else if (!strcmp(value, "DHCP6_SERVER_ID")) {
 				if (pgen_parse_option(fp, option, value))
 					goto err;
@@ -126,6 +127,40 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 					goto err;
 				op_ptr += tmp;
 				op_len += tmp;
+			}
+			/* Option Request Option */
+			else if (!strcmp(value, "DHCP6_ORO")) {
+				/**
+				 * option-len = 2 * number of requested options [RFC-3315]
+				 */
+				int32_t orc_num = htons(tmp) / 2;
+				while (orc_num) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (strcmp(option, "DHCP6_ORC"))
+						goto err;
+					if (pgen_store_num(&tmp, value)) {
+						printf("store num error\n");
+						goto err;
+					}
+					tmp = htons(tmp);
+					memcpy(op_ptr, &tmp, 2);
+					op_ptr += 2;
+					op_len += 2;
+					orc_num--;
+				}
+			}
+			/* Option Preference */
+			else if (!strcmp(value, "DHCP6_OP_PREF")) {
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (strcmp(option, "DHCP6_OP_PREF"))
+					goto err;
+				if (pgen_store_num(&tmp, value))
+					goto err;
+				*op_ptr = (char)tmp;
+				op_ptr++;
+				op_len++;
 			}
 			/* Unknown option */
 			else {

@@ -63,7 +63,7 @@ int32_t pgen_strcmp(const char *s1, const char *s2) {
 int16_t calculate_internet_checksum(int16_t *pkt, int32_t len,
 	   FILE *fp, int32_t type) {
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
-	uint32_t checksum = 0;
+	int32_t checksum = 0;
 	int32_t init_pos, pos;
 	char src[16] = {0}, dst[16] = {0};
 	int32_t i;
@@ -103,10 +103,10 @@ int16_t calculate_internet_checksum(int16_t *pkt, int32_t len,
 		checksum += (((dst[i] & 0xff) << 8) | (dst[i+1] & 0xff));
 	}
 
-	/* process length of the icmpv6 message */	
+	/* process length of the message */	
 	checksum += len;
 
-	/* Process packet type. Packet type is always icmpv6 */
+	/* Process packet type */
 	checksum += type;
 
 	/* Process icmpv6 packet data */
@@ -115,11 +115,12 @@ int16_t calculate_internet_checksum(int16_t *pkt, int32_t len,
 		pkt++;
 		len -= 2;
 	}
+
 	if (len > 0)
-		checksum += ((*(char *)pkt) << 8);
+		checksum += (((*(char *)pkt) << 8) & 0xffff);
 
 	/* Make it into 16 bits */
-	while (checksum >> 16 != 0)
+	while (checksum >> 16)
 		checksum = (checksum & 0xffff) + (checksum >> 16);
 
 	/* One's complement */

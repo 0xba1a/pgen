@@ -523,6 +523,10 @@ DHCPV6_OPTION------------------------------------------------------------------
 6. DHCP6_OPTION
 	The dhcp6 option. Supported options are
 	* DHCP6_CLIENT_ID		Client identifier option
+	* DHCP6_SERVER_ID		Server identifier option
+	* DHCP6_ORO				Option Request option
+	* DHCP6_OP_PREF			Preference option
+-------------------------------------------------------------------------------
 
 Client Identifier Option-------------------------------------------------------
 7. DHCP6_CLIENT_ID
@@ -531,3 +535,16 @@ Client Identifier Option-------------------------------------------------------
 Server Identifier Option-------------------------------------------------------
 8. DHCP6_SERVER_ID
 	DUID Of Server. Given hex value will be dumped in packet
+-------------------------------------------------------------------------------
+
+Option Request Option----------------------------------------------------------
+8. DHCP6_ORC
+	Option Request Code. The code of the option, which is being requested.
+Number of requested optinos will be obtained from length of the option. So user
+has to give len/2 entries of this options
+-------------------------------------------------------------------------------
+
+Preference Option--------------------------------------------------------------
+9. DHCP6_OP_PREF
+	Preference value for the server.
+-------------------------------------------------------------------------------
