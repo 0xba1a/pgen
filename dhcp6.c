@@ -48,6 +48,7 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 	 */
 	int32_t items=3, tmp, op_num, op_len = 0;
 	int8_t *op_ptr;
+	int16_t sh_tmp;
 
 	while (items--) {
 		if (pgen_parse_option(fp, option, value))
@@ -161,6 +162,18 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 				*op_ptr = (char)tmp;
 				op_ptr++;
 				op_len++;
+			}
+			/* Elapsed time option */
+			else if (!strcmp(value, "DHCP6_OP_ELAPSED_TIME")) {
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (strcmp(option, "DHCP6_OP_ELAPSED_TIME"))
+					goto err;
+				if (pgen_store_num(&tmp, value))
+					goto err;
+				sh_tmp = htons(tmp);
+				memcpy(op_ptr, &sh_tmp, 2);
+				op_len += 2;
 			}
 			/* Unknown option */
 			else {

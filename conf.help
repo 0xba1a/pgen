@@ -548,3 +548,9 @@ Preference Option--------------------------------------------------------------
 9. DHCP6_OP_PREF
 	Preference value for the server.
 -------------------------------------------------------------------------------
+
+Elapsed Time Option------------------------------------------------------------
+10. DHCP6_OP_ELAPSED_TIME
+	The amount of time since the client began its current DHCP transaction.
+This time is expressed in hundredths of a second (10^-2 seconds).
+-------------------------------------------------------------------------------
