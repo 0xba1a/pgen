@@ -6,6 +6,7 @@
  * Make pgen_store_dec to pgen_store_num to support hex also. Also validate the
    number before converting. [19-08-2013]
  * Add IA_NA and IA_TA option for DHCPv6 message
+ * Add Authentication option for DHCPv6 message
 
 Bugs:
  * ICMPv6 checksum manual entry should be converted to network byte stream

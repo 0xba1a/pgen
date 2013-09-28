@@ -522,10 +522,12 @@ DHCPV6_OPTION------------------------------------------------------------------
 
 6. DHCP6_OPTION
 	The dhcp6 option. Supported options are
-	* DHCP6_CLIENT_ID		Client identifier option
-	* DHCP6_SERVER_ID		Server identifier option
-	* DHCP6_ORO				Option Request option
-	* DHCP6_OP_PREF			Preference option
+	* DHCP6_CLIENT_ID			Client identifier option
+	* DHCP6_SERVER_ID			Server identifier option
+	* DHCP6_ORO					Option Request option
+	* DHCP6_OP_PREF				Preference option
+	* DHCP6_OP_ELAPSED_TIME		Elapsed Time option
+	* DHCP6_OP_SERVER_UNICAST	Server Unicast Option
 -------------------------------------------------------------------------------
 
 Client Identifier Option-------------------------------------------------------
@@ -553,4 +555,10 @@ Elapsed Time Option------------------------------------------------------------
 10. DHCP6_OP_ELAPSED_TIME
 	The amount of time since the client began its current DHCP transaction.
 This time is expressed in hundredths of a second (10^-2 seconds).
+-------------------------------------------------------------------------------
+
+Server Unicast Option----------------------------------------------------------
+11. DHCP6_OP_SER_UNICAST_ADDR
+	The IP address to which the client should send messages delivered using
+unicast.
 -------------------------------------------------------------------------------

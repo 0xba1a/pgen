@@ -173,7 +173,19 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 					goto err;
 				sh_tmp = htons(tmp);
 				memcpy(op_ptr, &sh_tmp, 2);
+				op_ptr += 2;
 				op_len += 2;
+			}
+			/* Server Unicast Option */
+			else if (!strcmp(value, "DHCP6_OP_SERVER_UNICAST")) {
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (strcmp(option, "DHCP6_OP_SER_UNICAST_ADDR"))
+					goto err;
+				if (ip6_writer((char *)op_ptr, value))
+					goto err;
+				op_ptr += 16;
+				op_len += 16;
 			}
 			/* Unknown option */
 			else {
