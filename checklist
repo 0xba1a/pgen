@@ -1,0 +1,8 @@
+ 1. Back-up conf file in sample_conf
+ 2. Include new options in conf.help
+ 3. Edit CHANGES
+ 4. Edit TODO if any pre-identified task finished
+ 5. Close all open files
+ 6. make clean
+ 7. Commit
+ 8. Check git-hub whether commit reflects

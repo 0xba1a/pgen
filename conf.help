@@ -528,6 +528,8 @@ DHCPV6_OPTION------------------------------------------------------------------
 	* DHCP6_OP_PREF				Preference option
 	* DHCP6_OP_ELAPSED_TIME		Elapsed Time option
 	* DHCP6_OP_SERVER_UNICAST	Server Unicast Option
+	* DHCP6_OPTION_IANA			IANA Option
+	* DHCP6_OPTION_IATA			IATA Option
 -------------------------------------------------------------------------------
 
 Client Identifier Option-------------------------------------------------------
@@ -561,4 +563,23 @@ Server Unicast Option----------------------------------------------------------
 11. DHCP6_OP_SER_UNICAST_ADDR
 	The IP address to which the client should send messages delivered using
 unicast.
+-------------------------------------------------------------------------------
+
+IANA Option--------------------------------------------------------------------
+12. DHCP6_IANA_IAID
+	The unique identifier for the IA_NA.
+
+13. DHCP6_IANA_T1
+	T1 in seconds
+
+14. DHCP6_IANA_T2
+	T2 in sedonds
+
+15. DHCP6_IANA_OP_NUM
+	Number of options the IANA option have. As of now now options identified.
+-------------------------------------------------------------------------------
+
+IATA Option--------------------------------------------------------------------
+16. DHCP6_IATA_IAID
+	The unique identifier for the IA_TA
 -------------------------------------------------------------------------------

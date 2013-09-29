@@ -21,4 +21,6 @@ pgen-0.01----------------------------------------------------------------------
 	-> Preference Option added
 	-> Elapsed Time Option added
 	-> Server Unicast Option added
+	-> IANA Option added
+	-> IATA Option added
 pgen-0.02----------------------------------------------------------------------

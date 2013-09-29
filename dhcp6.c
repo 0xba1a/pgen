@@ -35,6 +35,115 @@ struct dhcp6_pkt {
 	int8_t option;
 };
 
+int dhcp6_iana_op_writer(FILE *fp, char *op_ptr) {
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	int32_t tmp, len = 0, op_num;
+	/**
+	 * Four items
+	 * 1. IAID
+	 * 2. T1
+	 * 3. T2
+	 *
+	 * 4. Number of IANA optins
+	 */
+	int32_t items = 4;
+
+	while (items--) {
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+
+		if (!strcmp(option, "DHCP6_IANA_IAID")) {
+			if (pgen_store_num(&tmp, value))
+				goto err;
+			tmp = htonl(tmp);
+			memcpy(op_ptr, &tmp, 4);
+			op_ptr += 4;
+			len += 4;
+		}
+		else if (!strcmp(option, "DHCP6_IANA_T1")) {
+			if (pgen_store_num(&tmp, value))
+				goto err;
+			tmp = htonl(tmp);
+			memcpy(op_ptr, &tmp, 4);
+			op_ptr += 4;
+			len += 4;
+		}
+		else if (!strcmp(option, "DHCP6_IANA_T2")) {
+			if (pgen_store_num(&tmp, value))
+				goto err;
+			tmp = htonl(tmp);
+			memcpy(op_ptr, &tmp, 4);
+			op_ptr += 4;
+			len += 4;
+		}
+		else if (!strcmp(option, "DHCP6_IANA_OP_NUM")) {
+			if (pgen_store_num(&op_num ,value))
+				goto err;
+		}
+		else
+			goto err;
+	}
+
+	while (op_num--) {
+		/**
+		 * I couldn't able to find resources telling about IANA options.
+		 * Once found, this section will be completed.
+		 */
+	}
+
+	return len;
+
+err:
+	PGEN_INFO("Error while writing DHCP6_IANA_OPTION");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
+	return -1;
+}
+
+int dhcp6_iata_op_writer(FILE *fp, char *op_ptr) {
+	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
+	int32_t tmp, len = 0, op_num;
+	/**
+	 * Totoally 2 options
+	 * 1. IAID
+	 *
+	 * 2. Number of options
+	 */
+	int32_t items = 2;
+
+	while (items--) {
+		if (pgen_parse_option(fp, option, value))
+			goto err;
+
+		if (!strcmp(option, "DHCP6_IATA_IAID")) {
+			if (pgen_store_num(&tmp, value))
+				goto err;
+			tmp = htonl(tmp);
+			memcpy(op_ptr, &tmp, 4);
+			op_ptr += 4;
+			len += 4;
+		}
+		else if (!strcmp(option, "DHCP6_IATA_OP_NUM")) {
+			if (pgen_store_num(&op_num, value))
+				goto err;
+		}
+		else
+			goto err;
+	}
+
+	while (op_num--) {
+		/**
+		 * Options not yet identified
+		 */
+	}
+
+	return len;
+
+err:
+	PGEN_INFO("Error while writing DHCP6 IATA option");
+	PGEN_PRINT_DATA("Option: %s\tValue: %s\n", option, value);
+	return -1;
+}
+
 char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 	struct dhcp6_pkt *pkt = (struct dhcp6_pkt *)cp_cur;
 	char option[MAX_OPTION_LEN], value[MAX_VALUE_LEN];
@@ -186,6 +295,22 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 					goto err;
 				op_ptr += 16;
 				op_len += 16;
+			}
+			/* IANA Option */
+			else if (!strcmp(value, "DHCP6_OPTION_IANA")) {
+				tmp = dhcp6_iana_op_writer(fp, (char *)op_ptr);
+				if (tmp < 0)
+					goto err;
+				op_ptr += tmp;
+				op_len += tmp;
+			}
+			/* IATA Option */
+			else if (!strcmp(value, "DHCP6_OPTION_IATA")) {
+				tmp = dhcp6_iata_op_writer(fp, (char *)op_ptr);
+				if (tmp < 0)
+					goto err;
+				op_ptr += tmp;
+				op_len += tmp;
 			}
 			/* Unknown option */
 			else {
