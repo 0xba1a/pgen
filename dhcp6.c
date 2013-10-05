@@ -352,6 +352,12 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 					op_ptr += tmp;
 					op_len += tmp;
 				}
+				else
+					goto err;
+			}
+			/* Rapid Commit Option */
+			else if (!strcmp(value, "DHCP6_RAPID_COMMIT")) {
+				/* Do nothing */
 			}
 			/* Unknown option */
 			else {

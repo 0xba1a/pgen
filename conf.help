@@ -531,6 +531,7 @@ DHCPV6_OPTION------------------------------------------------------------------
 	* DHCP6_OPTION_IANA			IANA Option
 	* DHCP6_OPTION_IATA			IATA Option
 	* DHCP6_STATUS_CODE			Status Code Option
+	* DHCP6_RAPID_COMMIT		Rapid Commit option
 -------------------------------------------------------------------------------
 
 Client Identifier Option-------------------------------------------------------
@@ -598,4 +599,8 @@ Status Code Option-------------------------------------------------------------
 
 19. DHCP6_OP_STATUS_MSG
 	Hex code of the status message.
+-------------------------------------------------------------------------------
+
+Rapid Commit Option------------------------------------------------------------
+	No specific options as of now
 -------------------------------------------------------------------------------
