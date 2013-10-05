@@ -532,6 +532,7 @@ DHCPV6_OPTION------------------------------------------------------------------
 	* DHCP6_OPTION_IATA			IATA Option
 	* DHCP6_STATUS_CODE			Status Code Option
 	* DHCP6_RAPID_COMMIT		Rapid Commit option
+	* DHCP6_USER_CLASS			User Class option
 -------------------------------------------------------------------------------
 
 Client Identifier Option-------------------------------------------------------
@@ -603,4 +604,15 @@ Status Code Option-------------------------------------------------------------
 
 Rapid Commit Option------------------------------------------------------------
 	No specific options as of now
+-------------------------------------------------------------------------------
+
+User Class Option--------------------------------------------------------------
+20. DHCP6_OP_USR_CLS_NUM
+	Number of user class data in the option
+
+21. DHCP6_OP_USR_CLS_LEN
+	Length of the user class option data.
+
+22. DHCP6_OP_USR_CLS_DATA
+	The opaque user class data itself.
 -------------------------------------------------------------------------------
