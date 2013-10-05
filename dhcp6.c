@@ -312,6 +312,47 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 				op_ptr += tmp;
 				op_len += tmp;
 			}
+			/* Status Code Option */
+			else if (!strcmp(value, "DHCP6_STATUS_CODE")) {
+				int16_t st_code;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "DHCP6_OP_STATUS_CODE")) {
+					if (!strcmp(value, "SUCCESS"))
+						st_code = htons(0);
+					else if (!strcmp(value, "UNSPECFAIL"))
+						st_code = htons(1);
+					else if (!strcmp(value, "NOADDRAVAIL"))
+						st_code = htons(2);
+					else if (!strcmp(value, "NOBINDING"))
+						st_code = htons(3);
+					else if (!strcmp(value, "NOTONLINK"))
+						st_code = htons(4);
+					else if (!strcmp(value, "USEMULTICAST"))
+						st_code = htons(5);
+					else {
+						if (pgen_store_num(&tmp, value))
+							goto err;
+						st_code = htons(tmp);
+					}
+					memcpy(op_ptr, &st_code, 2);
+					op_ptr += 2;
+					op_len += 2;
+				}
+				else
+					goto err;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (!strcmp(option, "DHCP6_OP_STATUS_MSG")) {
+					tmp = pgen_hex_dump((int8_t *)op_ptr, value);
+					if (tmp < 0)
+						goto err;
+					op_ptr += tmp;
+					op_len += tmp;
+				}
+			}
 			/* Unknown option */
 			else {
 				PGEN_INFO("Option not yet supported");

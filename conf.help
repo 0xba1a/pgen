@@ -530,6 +530,7 @@ DHCPV6_OPTION------------------------------------------------------------------
 	* DHCP6_OP_SERVER_UNICAST	Server Unicast Option
 	* DHCP6_OPTION_IANA			IANA Option
 	* DHCP6_OPTION_IATA			IATA Option
+	* DHCP6_STATUS_CODE			Status Code Option
 -------------------------------------------------------------------------------
 
 Client Identifier Option-------------------------------------------------------
@@ -582,4 +583,19 @@ IANA Option--------------------------------------------------------------------
 IATA Option--------------------------------------------------------------------
 16. DHCP6_IATA_IAID
 	The unique identifier for the IA_TA
+-------------------------------------------------------------------------------
+
+Status Code Option-------------------------------------------------------------
+18. DHCP6_OP_STATUS_CODE
+	Status code of the message. Possible options
+		SUCCESS			0
+		UNSPECFAIL		1
+		NOADDRAVAIL		2
+		NOBINDING		3
+		NOTONLINK		4
+		USEMULTICAST	5
+		[Any decimal/hex number]
+
+19. DHCP6_OP_STATUS_MSG
+	Hex code of the status message.
 -------------------------------------------------------------------------------
