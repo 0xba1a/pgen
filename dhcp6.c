@@ -393,6 +393,51 @@ char* pgen_dhcp6_writer(FILE *fp, char *cp_cur) {
 					op_len += tmp;
 				}
 			}
+			/* Vender Class Option */
+			else if (!strcmp(value, "DHCP6_VENDER_CLASS")) {
+				int32_t op_num;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (strcmp(option, "DHCP6_OP_VND_ENT_NO"))
+					goto err;
+				if (pgen_store_num(&tmp, value))
+					goto err;
+				tmp = htonl(tmp);
+				memcpy(op_ptr, &tmp, 4);
+				op_ptr += 4;
+				op_len += 4;
+
+				if (pgen_parse_option(fp, option, value))
+					goto err;
+				if (strcmp(option, "DHCP6_OP_VND_CLS_NUM"))
+					goto err;
+				if (pgen_store_num(&op_num, value))
+					goto err;
+
+				while (op_num--) {
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (strcmp(option, "DHCP6_OP_VND_CLS_LEN"))
+						goto err;
+					if (pgen_store_num(&tmp, value))
+						goto err;
+					sh_tmp = htons(tmp);
+					memcpy(op_ptr, &sh_tmp, 2);
+					op_ptr += 2;
+					op_len += 2;
+
+					if (pgen_parse_option(fp, option, value))
+						goto err;
+					if (strcmp(option, "DHCP6_OP_VND_CLS_DATA"))
+						goto err;
+					tmp = pgen_hex_dump((int8_t *)op_ptr, value);
+					if (tmp < 0)
+						goto err;
+					op_ptr += tmp;
+					op_len += tmp;
+				}
+			}
 			/* Unknown option */
 			else {
 				PGEN_INFO("Option not yet supported");

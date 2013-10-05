@@ -533,6 +533,7 @@ DHCPV6_OPTION------------------------------------------------------------------
 	* DHCP6_STATUS_CODE			Status Code Option
 	* DHCP6_RAPID_COMMIT		Rapid Commit option
 	* DHCP6_USER_CLASS			User Class option
+	* DHCP6_VENDER_CLASS		Vender Class option
 -------------------------------------------------------------------------------
 
 Client Identifier Option-------------------------------------------------------
@@ -615,4 +616,15 @@ User Class Option--------------------------------------------------------------
 
 22. DHCP6_OP_USR_CLS_DATA
 	The opaque user class data itself.
+-------------------------------------------------------------------------------
+
+Vender Class Option------------------------------------------------------------
+23. DHCP6_OP_VND_ENT_NO
+	Vender enterprise number as registered with IANA
+
+24. DHCP6_OP_VND_CLS_LEN
+	Length of the vender class option data followed
+
+25. DHCP6_OP_VND_CLS_DATA
+	The opaque vender class data.
 -------------------------------------------------------------------------------
