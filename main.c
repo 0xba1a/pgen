@@ -46,7 +46,7 @@ int32_t main(int32_t argc, char **argv) {
 	/* Open Conf file */
 	fp = fopen(conf_file, "r");
 	if (!fp) {
-		PGEN_ERROR("fopen error", errno);
+		PGEN_ERROR(conf_file);
 		return -1;
 	}
 
@@ -79,7 +79,7 @@ int32_t main(int32_t argc, char **argv) {
 	/* Allocating the packet itself ;) */
 	cp_buff = malloc(buff_size);
 	if (!cp_buff) {
-		PGEN_ERROR("malloc failed", errno);
+		PGEN_ERROR("malloc failed");
 		goto err;
 	}
 	memset(cp_buff, 0, buff_size);

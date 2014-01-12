@@ -43,9 +43,9 @@
 #define PGEN_INFO(MSG) do {                                                    \
 	fprintf(stdout, "File:%s, Line:%d, %s\n", __FILE__,	__LINE__, MSG);        \
 	} while(0)
-#define PGEN_ERROR(MSG, errno) do {                                            \
-	fprintf(stderr, "File:%s, Line:%d, %s, errno:%d\n", __FILE__, __LINE__,    \
-			MSG, errno);                                                       \
+#define PGEN_ERROR(MSG) do {                                            \
+	fprintf(stderr, "File:%s, Line:%d, %s, errno:%d, err:%s\n", __FILE__, __LINE__,    \
+			MSG, errno, strerror(errno));                              \
 	} while(0)
 #define PGEN_PRINT_DATA(...) do {                                              \
 	fprintf(stdout, __VA_ARGS__);                                              \

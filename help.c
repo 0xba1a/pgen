@@ -161,7 +161,7 @@ int32_t send_packet(const char *if_name, const char *dst_mac, const char *cp_buf
 	/* Get the RAW socket. Must have root permission */
     sockfd = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW);
     if (sockfd < 0) {
-		PGEN_ERROR("socket creation failed", errno);
+		PGEN_ERROR("socket creation failed");
         goto err;
     }
 
@@ -169,7 +169,7 @@ int32_t send_packet(const char *if_name, const char *dst_mac, const char *cp_buf
     memset(&s_if_idx, 0, sizeof (struct ifreq));
     strcpy(s_if_idx.ifr_name, if_name);
     if (ioctl(sockfd, SIOCGIFINDEX, &s_if_idx) < 0) {
-		PGEN_ERROR("ioctl to get if index failed", errno);
+		PGEN_ERROR("ioctl to get if index failed");
         goto err;
     }
 
@@ -177,7 +177,7 @@ int32_t send_packet(const char *if_name, const char *dst_mac, const char *cp_buf
     memset(&s_if_mac, 0, sizeof(struct ifreq));
     strcpy(s_if_mac.ifr_name, if_name);
     if (ioctl(sockfd, SIOCGIFHWADDR, &s_if_mac) < 0) {
-		PGEN_ERROR("ioctl to get if mac failed", errno);
+		PGEN_ERROR("ioctl to get if mac failed");
         goto err;
     }
 
@@ -194,7 +194,7 @@ int32_t send_packet(const char *if_name, const char *dst_mac, const char *cp_buf
 	if (sendto(sockfd, cp_buff, buff_size, 0,
                 (struct sockaddr *)&s_sock_addr,
                 sizeof(struct sockaddr_ll)) < 0) {
-		PGEN_ERROR("sendto failed", errno);
+		PGEN_ERROR("sendto failed");
         goto err;
     }
 	return 0;
@@ -778,7 +778,7 @@ int32_t validate_if(const char *if_name) {
 	/* To get interface's index and flags, we need a socket */
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
-		PGEN_ERROR("Socket creation failed", errno);
+		PGEN_ERROR("Socket creation failed");
 		goto err;
     }
 
@@ -791,13 +791,13 @@ int32_t validate_if(const char *if_name) {
 	 * is a valid one.
 	 */
     if (ioctl(sockfd, SIOCGIFINDEX, &req) < 0) {
-		PGEN_ERROR("ioctl - Get index", errno);
+		PGEN_ERROR("ioctl - Get index");
         goto err;
     }
 
 	/* Get flags related to the interface */
     if (ioctl(sockfd, SIOCGIFFLAGS, &req) < 0) {
-		PGEN_ERROR("ioctl - Get flags", errno);
+		PGEN_ERROR("ioctl - Get flags");
         goto err;
     }
 
